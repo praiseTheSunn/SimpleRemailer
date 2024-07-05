@@ -1,5 +1,5 @@
 # encryption_manager.py
-from dynamic_loader import AlgorithmLoader
+from AlgorithmLoader import AlgorithmLoader
 
 class EncryptionManager:
     def __init__(self, algorithm_directory):
