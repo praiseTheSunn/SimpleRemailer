@@ -1,3 +1,4 @@
 cryptography
 secure-smtplib
 Flask
+pycryptodome
