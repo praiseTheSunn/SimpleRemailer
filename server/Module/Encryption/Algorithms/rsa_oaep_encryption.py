@@ -1,9 +1,9 @@
-# rsa_encryption.py
+# algorithms/rsa_oaep_encryption.py
 from AsymmetricEncryption import AsymmetricEncryption
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 
-class RSAEncryption(AsymmetricEncryption):
+class RSAOAEPEncryption(AsymmetricEncryption):
     def encrypt(self, public_key_pem, data):
         public_key = serialization.load_pem_public_key(public_key_pem)
         ciphertext = public_key.encrypt(

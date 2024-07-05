@@ -2,6 +2,18 @@
 import importlib
 import os
 import sys
+from AsymmetricEncryption import AsymmetricEncryption  # Import AsymmetricEncryption
+
+class AlgorithmLoader:
+    def __init__(self, algorithm_directory):
+        self.algorithm_directory = algorithm_directory
+        self.algorithms = {}
+        self.load_algorithms()
+
+    def load_algorithms(self):
+        self.algorithms.clear()
+        sys.path
+
 
 class AlgorithmLoader:
     def __init__(self, algorithm_directory):
