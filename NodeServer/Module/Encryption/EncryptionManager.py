@@ -13,14 +13,12 @@ class EncryptionManager:
         return list(self.loader.algorithms.keys())
 
     def encrypt(self, algorithm_name, public_key_pem, data):
-        self._update_algorithms()  # Reload algorithms
         algorithm = self.loader.get_algorithm(algorithm_name)
         if not algorithm:
             raise ValueError(f"Algorithm {algorithm_name} not found")
         return algorithm.encrypt(public_key_pem, data)
 
     def decrypt(self, algorithm_name, private_key_pem, data):
-        self._update_algorithms()  # Reload algorithms
         algorithm = self.loader.get_algorithm(algorithm_name)
         if not algorithm:
             raise ValueError(f"Algorithm {algorithm_name} not found")
@@ -33,7 +31,6 @@ class EncryptionManager:
         self.loader.remove_algorithm(algorithm_name)
 
     def generate_keys(self, algorithm_name):
-        self._update_algorithms()  # Reload algorithms
         algorithm = self.loader.get_algorithm(algorithm_name)
         if not algorithm:
             raise ValueError(f"Algorithm {algorithm_name} not found")
