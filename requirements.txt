@@ -2,3 +2,6 @@ cryptography
 secure-smtplib
 Flask
 pycryptodome
+phe
+fastapi
+uvicorn

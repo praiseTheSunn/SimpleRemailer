@@ -20,31 +20,31 @@ manager = EncryptionManager(os.path.join(module, 'Algorithms'))
 available_algorithms = manager.get_available_algorithms()
 print(f"Available algorithms: {available_algorithms}")
 
-# # Data to be encrypted
-# data = b"Hello, World!"
+# Data to be encrypted
+data = b"Hello, World!"
 
-# print()
-# # Iterate over each available algorithm
-# for algorithm_name in available_algorithms:
-#     print(f"Testing algorithm: {algorithm_name}")
+print()
+# Iterate over each available algorithm
+for algorithm_name in available_algorithms:
+    print(f"Testing algorithm: {algorithm_name}")
 
-#     # Generate keys if the algorithm supports it
-#     private_key_pem, public_key_pem = manager.generate_keys(algorithm_name)
+    # Generate keys if the algorithm supports it
+    private_key_pem, public_key_pem = manager.generate_keys(algorithm_name)
 
-#     # Encrypt using the algorithm
-#     encrypted_data = manager.encrypt(algorithm_name, public_key_pem, data)
+    # Encrypt using the algorithm
+    encrypted_data = manager.encrypt(algorithm_name, public_key_pem, data)
 
-#     # Decrypt using the algorithm
-#     decrypted_data = manager.decrypt(algorithm_name, private_key_pem, encrypted_data)
+    # Decrypt using the algorithm
+    decrypted_data = manager.decrypt(algorithm_name, private_key_pem, encrypted_data)
 
-#     # Check if decryption was successful
-#     if decrypted_data == data:
-#         print(f"Success: Encryption and decryption for {algorithm_name} matched the original text.")
-#     else:
-#         print(f"Fail: Encryption and decryption for {algorithm_name} did not match the original text.")
+    # Check if decryption was successful
+    if decrypted_data == data:
+        print(f"Success: Encryption and decryption for {algorithm_name} matched the original text.")
+    else:
+        print(f"Fail: Encryption and decryption for {algorithm_name} did not match the original text.")
 
-#     print(f"Testing {algorithm_name} completed.")
-#     print()
+    print(f"Testing {algorithm_name} completed.")
+    print()
 
-# # Complete output
-# print("Encryption and decryption testing completed successfully!")
+# Complete output
+print("Encryption and decryption testing completed successfully!")

@@ -25,14 +25,17 @@ class AlgorithmLoader:
         self.algorithms.clear()
         sys.path.insert(0, self.algorithm_directory)
         for filename in os.listdir(self.algorithm_directory):
+            # print(filename)
             if filename.endswith(".py") and filename != "__init__.py":
                 module_name = filename[:-3]
                 module = importlib.import_module(module_name)
+                # print(module_name)
                 importlib.reload(module)  # Ensure module is reloaded
                 for attr in dir(module):
                     cls = getattr(module, attr)
                     if isinstance(cls, type) and issubclass(cls, AsymmetricEncryption) and cls is not AsymmetricEncryption:
                         self.algorithms[module_name] = cls()
+        # print(self.algorithms)
         sys.path.pop(0)
 
     def get_algorithm(self, name):

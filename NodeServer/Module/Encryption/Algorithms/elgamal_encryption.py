@@ -1,12 +1,11 @@
 from AsymmetricEncryption import AsymmetricEncryption
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization, hashes
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.backends import default_backend
 import os
 import pickle
 
-class ECCEncryption(AsymmetricEncryption):
+class ElGamalEncryption(AsymmetricEncryption):
     def encrypt(self, public_key_pem, data):
         public_key = serialization.load_pem_public_key(public_key_pem, backend=default_backend())
         ephemeral_private_key = ec.generate_private_key(ec.SECP256R1(), backend=default_backend())
@@ -15,16 +14,13 @@ class ECCEncryption(AsymmetricEncryption):
         
         # Derive a key from the shared secret and a salt
         salt = os.urandom(16)
-        derived_key = HKDF(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            info=None,
-            backend=default_backend()
-        ).derive(shared_key)
+        derived_key = hashes.Hash(hashes.SHA256(), backend=default_backend())
+        derived_key.update(shared_key)
+        derived_key.update(salt)
+        key = derived_key.finalize()
         
         # Encrypt the data
-        ciphertext = self._xor_bytes(data, derived_key)
+        ciphertext = self._xor_bytes(data, key)
         
         # Serialize the ephemeral public key, salt, and ciphertext
         ephemeral_public_key_pem = ephemeral_private_key.public_key().public_bytes(
@@ -45,16 +41,13 @@ class ECCEncryption(AsymmetricEncryption):
         shared_key = private_key.exchange(ec.ECDH(), ephemeral_public_key)
         
         # Derive the same key from the shared secret and the salt
-        derived_key = HKDF(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            info=None,
-            backend=default_backend()
-        ).derive(shared_key)
+        derived_key = hashes.Hash(hashes.SHA256(), backend=default_backend())
+        derived_key.update(shared_key)
+        derived_key.update(salt)
+        key = derived_key.finalize()
         
         # Decrypt the data
-        plaintext = self._xor_bytes(ciphertext, derived_key)
+        plaintext = self._xor_bytes(ciphertext, key)
         return plaintext
 
     @staticmethod
