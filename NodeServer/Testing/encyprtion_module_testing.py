@@ -20,40 +20,31 @@ manager = EncryptionManager(os.path.join(module, 'Algorithms'))
 available_algorithms = manager.get_available_algorithms()
 print(f"Available algorithms: {available_algorithms}")
 
-# # Sample public and private keys for RSA (use actual keys in practice)
-# public_key_pem = b"""-----BEGIN PUBLIC KEY-----
-# MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2X+M6iwjA6H4u5RxyIaN
-# ...
-# -----END PUBLIC KEY-----"""
-# private_key_pem = b"""-----BEGIN PRIVATE KEY-----
-# MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDn7s63A3jPHZ7H
-# ...
-# -----END PRIVATE KEY-----"""
+# # Data to be encrypted
 # data = b"Hello, World!"
 
-# # Function to test encryption and decryption
-# def test_algorithm(algorithm_name, public_key_pem, private_key_pem, data):
-#     print(f"\nTesting {algorithm_name}:")
-#     if algorithm_name in available_algorithms:
-#         try:
-#             # Encrypt
-#             encrypted_data = manager.encrypt(algorithm_name, public_key_pem, data)
-#             print(f"Encrypted: {encrypted_data}")
+# print()
+# # Iterate over each available algorithm
+# for algorithm_name in available_algorithms:
+#     print(f"Testing algorithm: {algorithm_name}")
 
-#             # Decrypt
-#             decrypted_data = manager.decrypt(algorithm_name, private_key_pem, encrypted_data)
-#             print(f"Decrypted: {decrypted_data}")
+#     # Generate keys if the algorithm supports it
+#     private_key_pem, public_key_pem = manager.generate_keys(algorithm_name)
 
-#             # Check if the decrypted data matches the original data
-#             assert decrypted_data == data, "Decryption failed: decrypted data does not match the original"
-#             print("Decryption successful: decrypted data matches the original")
-#         except Exception as e:
-#             print(f"An error occurred while testing {algorithm_name}: {e}")
+#     # Encrypt using the algorithm
+#     encrypted_data = manager.encrypt(algorithm_name, public_key_pem, data)
+
+#     # Decrypt using the algorithm
+#     decrypted_data = manager.decrypt(algorithm_name, private_key_pem, encrypted_data)
+
+#     # Check if decryption was successful
+#     if decrypted_data == data:
+#         print(f"Success: Encryption and decryption for {algorithm_name} matched the original text.")
 #     else:
-#         print(f"{algorithm_name} algorithm is not available.")
+#         print(f"Fail: Encryption and decryption for {algorithm_name} did not match the original text.")
 
-# # Test the algorithms
-# test_algorithm('rsa_encryption', public_key_pem, private_key_pem, data)
-# test_algorithm('ecc_encryption', public_key_pem, private_key_pem, data)
-# test_algorithm('elgamal_encryption', public_key_pem, private_key_pem, data)
-# test_algorithm('rsa_oaep_encryption', public_key_pem, private_key_pem, data)
+#     print(f"Testing {algorithm_name} completed.")
+#     print()
+
+# # Complete output
+# print("Encryption and decryption testing completed successfully!")

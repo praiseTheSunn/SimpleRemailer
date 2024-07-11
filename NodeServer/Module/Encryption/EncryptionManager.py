@@ -31,3 +31,10 @@ class EncryptionManager:
 
     def remove_algorithm(self, algorithm_name):
         self.loader.remove_algorithm(algorithm_name)
+
+    def generate_keys(self, algorithm_name):
+        self._update_algorithms()  # Reload algorithms
+        algorithm = self.loader.get_algorithm(algorithm_name)
+        if not algorithm:
+            raise ValueError(f"Algorithm {algorithm_name} not found")
+        return algorithm.generate_keys()
