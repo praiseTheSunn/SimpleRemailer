@@ -1,5 +1,4 @@
 # module/encryption.py
-
 import csv
 import json
 from fastapi import APIRouter, HTTPException, Request

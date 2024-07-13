@@ -1,7 +1,0 @@
-In my fast api app, I have a database using csv file. 
-It is store in Database/node.csv. 
-There are four collumn: id, ip, encryption, public_key. 
-Order: You need to write a POST api to add these information to the csv file. 
-Input: is json with that four variables, you add these four variables in the csv file. The (id, ip, encryption) is primary key.
-
-
