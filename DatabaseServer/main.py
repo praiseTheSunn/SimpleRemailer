@@ -1,18 +1,18 @@
-from fastapi import FastAPI
+# main.py
+
 import uvicorn
+from fastapi import FastAPI
+from module.encryption import router as encryption_router
 
 app = FastAPI()
 
+
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+    return "This is database server."
+
+# Include the encryption router
+app.include_router(encryption_router, prefix="/encryption")
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",  
-        port=8000,
-        reload=True,
-        ssl_keyfile="key.pem",
-        ssl_certfile="cert.pem"
-    )
+    uvicorn.run(app, host="127.0.0.1", port=8000)

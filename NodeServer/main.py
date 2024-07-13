@@ -22,7 +22,7 @@ app.add_middleware(
 # Define the hello page
 @app.get("/")
 async def read_root():
-    return {"message": "Hello, World!"}
+    return "This is node Server."
 
 # class StrategyRequest(BaseModel):
 #     strategy: str
@@ -54,4 +54,4 @@ async def read_root():
 #         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=8000, ssl_certfile="cert.pem", ssl_keyfile="key.pem")
+    uvicorn.run(app, host="0.0.0.0", port=8001, ssl_certfile="cert.pem", ssl_keyfile="key.pem")

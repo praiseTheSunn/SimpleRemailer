@@ -5,3 +5,4 @@ pycryptodome
 phe
 fastapi
 uvicorn
+pydantic
