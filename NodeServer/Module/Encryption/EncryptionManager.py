@@ -25,7 +25,7 @@ class EncryptionManager:
         return algorithm.decrypt(private_key_pem, data)
 
     def add_algorithm(self, module_name):
-        self._update_algorithms()
+        self.add_algorithm(module_name)
 
     def remove_algorithm(self, algorithm_name):
         self.loader.remove_algorithm(algorithm_name)

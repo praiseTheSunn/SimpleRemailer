@@ -36,6 +36,9 @@ async def update_encryption(request: Request):
     node = await request.json()
     required_fields = {"id", "ip", "encryption", "public_key"}
 
+    # print(type(node))
+    # return 
+
     if not required_fields.issubset(node.keys()):
         raise HTTPException(status_code=400, detail="Missing required fields")
 

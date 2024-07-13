@@ -1,15 +1,23 @@
 import importlib
-import os
-import sys
-import csv
-import base64
-from AsymmetricEncryption import AsymmetricEncryption  # Import AsymmetricEncryption
+import base64, json, csv, sys, os
+from AsymmetricEncryption import AsymmetricEncryption 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "Utils")) 
+from APICaller import APICaller 
 
 class AlgorithmLoader:
     def __init__(self, algorithm_directory):
         self.algorithm_directory = algorithm_directory
         self.algorithms = {}
         self.keys_file = os.path.join(os.path.dirname(__file__), "..", "..", "Storage", "keys.csv")
+        self.config_file = os.path.join(os.path.dirname(__file__), "..", "..", "Storage", "config.json")
+
+        with open(self.config_file, 'r') as file:
+            data = json.load(file)
+
+        self.api_caller = APICaller(base_url=data["database_ip"])
+        self.id = data["id"]
+        self.ip = data["ip"]
+
         self._ensure_storage_directory_exists()
         self.load_algorithms()
 
@@ -21,7 +29,6 @@ class AlgorithmLoader:
 
     def load_algorithms(self):
         print("Loading algorithms")
-        self.algorithms.clear()
         sys.path.insert(0, self.algorithm_directory)
         
         if not os.path.exists(self.keys_file):
@@ -33,27 +40,48 @@ class AlgorithmLoader:
             reader = csv.reader(file)
             keys = {rows[0]: (rows[1], rows[2]) for rows in reader}
         
+        # List of current algorithms in the directory
+        current_algorithms = set()
+
         for filename in os.listdir(self.algorithm_directory):
             if filename.endswith(".py") and filename != "__init__.py":
                 module_name = filename[:-3]
+                current_algorithms.add(module_name)
                 module = importlib.import_module(module_name)
                 importlib.reload(module)  # Ensure module is reloaded
                 for attr in dir(module):
                     cls = getattr(module, attr)
                     if isinstance(cls, type) and issubclass(cls, AsymmetricEncryption) and cls is not AsymmetricEncryption:
-                        self.algorithms[module_name] = cls()
-                        
-                        print(module_name)
-                        if module_name not in keys:
-                            print(f"Generating keys for {module_name}")
-                            private_key_pem, public_key_pem = cls().generate_keys()
-                            public_key_b64 = base64.b64encode(public_key_pem).decode('utf-8')
-                            private_key_b64 = base64.b64encode(private_key_pem).decode('utf-8')
-                            with open(self.keys_file, mode='a', newline='') as file:
-                                writer = csv.writer(file)
-                                writer.writerow([module_name, public_key_b64, private_key_b64])
+                        self.add_algorithm(module_name, cls, keys)
+        
+        # Remove algorithms that are in the keys file but not in the current directory
+        # for algorithm in list(keys.keys()):
+        #     if algorithm not in current_algorithms:
+        #         self.remove_algorithm(algorithm)
         
         sys.path.pop(0)
+
+    def add_algorithm(self, module_name, cls, keys):
+        # Add the algorithm to the dictionary
+        self.algorithms[module_name] = cls()
+        
+        # Write to the keys file if the algorithm is not already in it
+        if module_name not in keys:
+            private_key_pem, public_key_pem = cls().generate_keys()
+            public_key_b64 = base64.b64encode(public_key_pem).decode('utf-8')
+            private_key_b64 = base64.b64encode(private_key_pem).decode('utf-8')
+            with open(self.keys_file, mode='a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([module_name, public_key_b64, private_key_b64])
+
+            data = {
+                "id": self.id,
+                "ip": self.ip,
+                "encryption": module_name,
+                "public_key": public_key_b64,
+            }
+
+            self.api_caller.post("encryption/update_encryption", data)    
 
     def get_algorithm(self, name):
         return self.algorithms.get(name)
@@ -73,3 +101,13 @@ class AlgorithmLoader:
             writer = csv.writer(file)
             writer.writerow(['encryption_name', 'public_key', 'private_key'])
             writer.writerows(keys)
+
+        # # Send api to remove this encryption in database server
+        # data = {
+        #     "id": self.id,
+        #     "ip": self.ip,  
+        #     "encryption": name
+        # }
+
+        # json_data = json.dumps(data)
+        # self.api_caller.post("encryption/remove_encryption", json_data)
