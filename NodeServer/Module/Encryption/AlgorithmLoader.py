@@ -54,10 +54,11 @@ class AlgorithmLoader:
                     if isinstance(cls, type) and issubclass(cls, AsymmetricEncryption) and cls is not AsymmetricEncryption:
                         self.add_algorithm(module_name, cls, keys)
         
-        # Remove algorithms that are in the keys file but not in the current directory
-        # for algorithm in list(keys.keys()):
-        #     if algorithm not in current_algorithms:
-        #         self.remove_algorithm(algorithm)
+        # Remove algorms that are in the keys file but not in the current directory
+        for algorithm in list(keys.keys()):
+            if algorithm not in current_algorithms:
+                # print(algorithm)
+                self.remove_algorithm(algorithm)
         
         sys.path.pop(0)
 
@@ -102,12 +103,11 @@ class AlgorithmLoader:
             writer.writerow(['encryption_name', 'public_key', 'private_key'])
             writer.writerows(keys)
 
-        # # Send api to remove this encryption in database server
-        # data = {
-        #     "id": self.id,
-        #     "ip": self.ip,  
-        #     "encryption": name
-        # }
+        # Send api to remove this encryption in database server
+        data = {
+            "id": self.id,
+            "ip": self.ip,  
+            "encryption": name
+        }
 
-        # json_data = json.dumps(data)
-        # self.api_caller.post("encryption/remove_encryption", json_data)
+        self.api_caller.post("encryption/remove_encryption/", data)
