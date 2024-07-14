@@ -28,14 +28,11 @@ print()
 for algorithm_name in available_algorithms:
     print(f"Testing algorithm: {algorithm_name}")
 
-    # Generate keys if the algorithm supports it
-    private_key_pem, public_key_pem = manager.generate_keys(algorithm_name)
-
     # Encrypt using the algorithm
-    encrypted_data = manager.encrypt(algorithm_name, public_key_pem, data)
+    encrypted_data = manager.encrypt(algorithm_name, data)
 
     # Decrypt using the algorithm
-    decrypted_data = manager.decrypt(algorithm_name, private_key_pem, encrypted_data)
+    decrypted_data = manager.decrypt(algorithm_name, encrypted_data)
 
     # Check if decryption was successful
     if decrypted_data == data:

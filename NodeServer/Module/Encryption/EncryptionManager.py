@@ -1,9 +1,29 @@
 # encryption_manager.py
 from AlgorithmLoader import AlgorithmLoader
+import os, base64, csv
 
 class EncryptionManager:
     def __init__(self, algorithm_directory):
         self.loader = AlgorithmLoader(algorithm_directory)
+        self.keys_file = os.path.join(os.path.dirname(__file__), "..", "..", "Storage", "keys.csv")
+        self.keys = self._load_keys()
+
+    def _load_keys(self):
+        keys = {}
+        try:
+            with open(self.keys_file, mode='r') as file:
+                reader = csv.reader(file)
+                next(reader)  
+                for row in reader:
+                    module_name, public_key_b64, private_key_b64 = row
+
+                    keys[module_name] = {
+                        'public': base64.b64decode(public_key_b64.encode('utf-8')),
+                        'private': base64.b64decode(private_key_b64.encode('utf-8'))
+                    }
+        except FileNotFoundError:
+            pass
+        return keys
 
     def _update_algorithms(self):
         self.loader.load_algorithms()
@@ -12,13 +32,13 @@ class EncryptionManager:
         self._update_algorithms()  # Reload algorithms to get the latest list
         return list(self.loader.algorithms.keys())
 
-    def encrypt(self, algorithm_name, public_key_pem, data):
+    def encrypt_w_key(self, algorithm_name, public_key_pem, data):
         algorithm = self.loader.get_algorithm(algorithm_name)
         if not algorithm:
             raise ValueError(f"Algorithm {algorithm_name} not found")
         return algorithm.encrypt(public_key_pem, data)
 
-    def decrypt(self, algorithm_name, private_key_pem, data):
+    def decrypt_w_key(self, algorithm_name, private_key_pem, data):
         algorithm = self.loader.get_algorithm(algorithm_name)
         if not algorithm:
             raise ValueError(f"Algorithm {algorithm_name} not found")
@@ -35,3 +55,21 @@ class EncryptionManager:
         if not algorithm:
             raise ValueError(f"Algorithm {algorithm_name} not found")
         return algorithm.generate_keys()
+    
+    def encrypt(self, algorithm_name, data):
+        algorithm = self.loader.get_algorithm(algorithm_name)
+        if not algorithm:
+            raise ValueError(f"Algorithm {algorithm_name} not found")
+        if algorithm_name not in self.keys:
+            raise ValueError(f"No keys found for algorithm {algorithm_name}")
+        public_key_pem = self.keys[algorithm_name]['public']
+        return algorithm.encrypt(public_key_pem, data)
+
+    def decrypt(self, algorithm_name, data):
+        algorithm = self.loader.get_algorithm(algorithm_name)
+        if not algorithm:
+            raise ValueError(f"Algorithm {algorithm_name} not found")
+        if algorithm_name not in self.keys:
+            raise ValueError(f"No keys found for algorithm {algorithm_name}")
+        private_key_pem = self.keys[algorithm_name]['private']
+        return algorithm.decrypt(private_key_pem, data)
