@@ -5,7 +5,10 @@ class TimedSendStrategy(SendStrategy):
     def __init__(self, interval):
         self.interval = interval
 
-    def execute(self, queue, send_func):
-        if self.last_sent is None or datetime.now() - self.last_sent > timedelta(seconds=self.interval):
-            send_func()
-            self.last_sent = datetime.now()
+    def get_forward_mail_list(self, mix_node):
+        if (datetime.now() - mix_node.last_send) > timedelta(seconds=self.interval):
+            mails_list_to_send = mix_node.forward_list
+            mix_node.forward_list = []
+            return mails_list_to_send
+
+        return None

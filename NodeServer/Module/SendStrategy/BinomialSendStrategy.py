@@ -7,15 +7,18 @@ class BinomialSendStrategy(SendStrategy):
         self.probability = probability
         self.interval = interval
 
-    def execute(self, queue, send_func):
+    def get_forward_mail_list(self, mix_node):
         # Send each message with a probability
-        if datetime.now() - self.last_sent > timedelta(seconds=self.interval):
-            new_queue = []
-            for message in queue:
+        if datetime.now() - mix_node.last_send > timedelta(seconds=self.interval):
+            new_queue, mails_list_to_send = [], []
+
+            for message in mix_node.forward_list:
                 if random.random() < self.probability:
-                    send_func(message)
+                    mails_list_to_send.append(message)
                 else:
                     new_queue.append(message)
             # Update the queue with messages that were not sent
-            queue[:] = new_queue
-            self.last_sent = datetime.now()
+            mix_node.forward_list[:] = new_queue
+            return mails_list_to_send
+
+        return None

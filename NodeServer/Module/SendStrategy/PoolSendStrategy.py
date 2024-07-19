@@ -7,19 +7,17 @@ class PoolSendStrategy(SendStrategy):
         self.interval = interval
         self.min_percentage = min_percentage
         self.max_percentage = max_percentage
-        self.last_sent = datetime.now()
 
-    def execute(self, queue, send_func):
-        if datetime.now() - self.last_sent > timedelta(seconds=self.interval):
+    def get_forward_mail_list(self, mix_node):
+        if (datetime.now() - mix_node.last_send) > timedelta(seconds=self.interval):
             #  random % email dc gui
             percentage = random.uniform(self.min_percentage, self.max_percentage)
-            num_to_send = int(len(queue) * percentage)
+            num_to_send = int(len(mix_node.forward_list) * percentage)
 
-            to_send = queue[:num_to_send]
-            queue[:] = queue[num_to_send:]  # update queue
+            mails_list_to_send = mix_node.forward_list[:num_to_send]
+            mix_node.forward_list[:] = mix_node.forward_list[num_to_send:]  # update queue
 
-            for message in to_send:
-                send_func(message)
+            return mails_list_to_send
 
-            self.last_sent = current_time
+        return None
 
