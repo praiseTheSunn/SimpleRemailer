@@ -3,8 +3,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from schemas import EmailRequest, Message, DecryptedData, HeaderInfo
-from PathDeterminator import PathDeterminator, FullPathStrategy, PartialPathStrategy
+from NodeServer.Module.schemas import EmailRequest, Message, DecryptedData, HeaderInfo
 
 import sys
 import os
@@ -20,7 +19,7 @@ module = os.path.join(module, 'Module', 'Encryption')
 sys.path.insert(0, module)
 
 # Now you can import EncryptionManager
-from EncryptionManager import EncryptionManager
+from NodeServer.Module.Encryption.EncryptionManager import EncryptionManager
 
 # Assuming algorithm classes are in the 'Algorithms' directory
 manager = EncryptionManager(os.path.join(module, 'Algorithms'))

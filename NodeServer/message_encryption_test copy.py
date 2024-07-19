@@ -2,12 +2,8 @@ import base64
 import json
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-from pydantic import BaseModel
-from typing import Optional
 
-from schemas import EmailRequest, Message, DecryptedData, HeaderInfo
-from PathDeterminator import PathDeterminator, FullPathStrategy, PartialPathStrategy
+from NodeServer.Module.schemas import EmailRequest, Message, DecryptedData, HeaderInfo
 
 import sys
 import os
