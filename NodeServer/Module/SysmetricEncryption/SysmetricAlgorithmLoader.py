@@ -30,18 +30,21 @@ class SysmetricAlgorithmLoader:
             if filename.endswith(".py") and filename != "__init__.py":
                 module_name = filename[:-3]
                 current_algorithms.add(module_name)
+        
+        for algorithm, _ in self.algorithms.items():
+            if algorithm not in current_algorithms:
+                self.remove_algorithm(algorithm)
+                
+
+        for filename in os.listdir(self.algorithm_directory):
+            if filename.endswith(".py") and filename != "__init__.py":
+                module_name = filename[:-3]
                 module = importlib.import_module(module_name)
                 importlib.reload(module)  # Ensure module is reloaded
                 for attr in dir(module):
                     cls = getattr(module, attr)
                     if isinstance(cls, type) and issubclass(cls, SymmetricEncryption) and cls is not SymmetricEncryption:
                         self.add_algorithm(module_name, cls)
-        
-        # Remove algorms that are in the keys file but not in the current directory
-        # for algorithm in list(keys.keys()):
-        #     if algorithm not in current_algorithms:
-        #         # print(algorithm)
-        #         self.remove_algorithm(algorithm)
         
         sys.path.pop(0)
 

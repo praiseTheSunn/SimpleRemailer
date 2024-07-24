@@ -30,7 +30,7 @@ class AESEncryption(SymmetricEncryption):
         return decrypted_data
 
     @staticmethod
-    def generate_keys(key_size=256):
+    def generate_keys(key_size=192):
         """
         Generate a random key for AES encryption.
 
