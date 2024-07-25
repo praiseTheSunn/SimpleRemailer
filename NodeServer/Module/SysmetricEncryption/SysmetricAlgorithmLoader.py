@@ -52,14 +52,12 @@ class SysmetricAlgorithmLoader:
         # Add the algorithm to the dictionary
         self.algorithms[module_name] = cls()
         
-            # data = {
-            #     "id": self.id,
-            #     "ip": self.ip,
-            #     "encryption": module_name,
-            #     "public_key": public_key_b64,
-            # }
+        data = {
+            "id": self.id,
+            "encryption": module_name,
+        }
 
-            # self.api_caller.post("encryption/update_encryption", data)    
+        self.api_caller.post("symmetric_encryption/update_symmetric_encryption", data)    
 
     def get_algorithm(self, name):
         return self.algorithms.get(name)
@@ -69,10 +67,9 @@ class SysmetricAlgorithmLoader:
             del self.algorithms[name]
         
         # Send api to remove this encryption in database server
-        # data = {
-        #     "id": self.id,
-        #     "ip": self.ip,  
-        #     "encryption": name
-        # }
+        data = {
+            "id": self.id,
+            "encryption": name
+        }
 
-        # self.api_caller.post("encryption/remove_encryption/", data)
+        self.api_caller.post("symmetric_encryption/remove_symmetric_encryption/", data)

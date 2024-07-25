@@ -79,11 +79,3 @@ async def remove_encryption(request: Request):
 
     write_csv(database_node, data)
     return {"message": "Encryption removed successfully"}
-
-@router.get("/get_encryption")
-async def get_encryption():
-    try:
-        data = read_csv(database_node)
-        return JSONResponse(content=data)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading the CSV file: {str(e)}")

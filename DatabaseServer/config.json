@@ -1,4 +1,6 @@
 {
     "database_node": "database/node.csv",
-    "database_symmetric_encryption": "database/symmetric_encryption.csv"
+    "database_symmetric_encryption": "database/symmetric_encryption.csv",
+    "database_name": "database/name.csv",
+    "database_password": "database/password.csv"
 }
