@@ -15,6 +15,7 @@ class SysmetricAlgorithmLoader:
             data = json.load(file)
 
         self.api_caller = APICaller(base_url=data["database_ip"])
+        self.password = data["password"]
         self.id = data["id"]
         self.ip = data["ip"]
         self.load_algorithms()
@@ -55,6 +56,7 @@ class SysmetricAlgorithmLoader:
         data = {
             "id": self.id,
             "encryption": module_name,
+            "password": self.password,
         }
 
         self.api_caller.post("symmetric_encryption/update_symmetric_encryption", data)    
@@ -69,7 +71,8 @@ class SysmetricAlgorithmLoader:
         # Send api to remove this encryption in database server
         data = {
             "id": self.id,
-            "encryption": name
+            "encryption": name,
+            "password": self.password,
         }
 
         self.api_caller.post("symmetric_encryption/remove_symmetric_encryption/", data)

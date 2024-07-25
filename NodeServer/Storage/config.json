@@ -1,5 +1,6 @@
 {
     "id": "001",
     "database_ip": "http://localhost:8000",
-    "ip": "http://localhost:8001"
+    "ip": "http://localhost:8001",
+    "password": "1"
 }

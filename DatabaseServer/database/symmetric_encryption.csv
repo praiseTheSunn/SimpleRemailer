@@ -1,6 +1,6 @@
-id,encryption,
+id,encryption
 001,3des_encryption
-001,,aes_encryption
+001,aes_encryption
 001,blowfish_encryption
 001,camellia_encryption
 001,chacha20_encryption

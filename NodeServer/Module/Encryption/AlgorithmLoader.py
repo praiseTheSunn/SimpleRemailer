@@ -15,6 +15,7 @@ class AlgorithmLoader:
             data = json.load(file)
 
         self.api_caller = APICaller(base_url=data["database_ip"])
+        self.password = data["password"]
         self.id = data["id"]
         self.ip = data["ip"]
 
@@ -40,6 +41,8 @@ class AlgorithmLoader:
             reader = csv.reader(file)
             keys = {rows[0]: (rows[1], rows[2]) for rows in reader}
         
+        print(keys)
+
         # List of current algorithms in the directory
         current_algorithms = set()
 
@@ -63,6 +66,7 @@ class AlgorithmLoader:
         sys.path.pop(0)
 
     def add_algorithm(self, module_name, cls, keys):
+
         # Add the algorithm to the dictionary
         self.algorithms[module_name] = cls()
         
@@ -75,12 +79,17 @@ class AlgorithmLoader:
                 writer = csv.writer(file)
                 writer.writerow([module_name, public_key_b64, private_key_b64])
 
+            
+
             data = {
                 "id": self.id,
                 "ip": self.ip,
                 "encryption": module_name,
                 "public_key": public_key_b64,
+                "password": self.password,
             }
+
+            print(data)
 
             self.api_caller.post("encryption/update_encryption", data)    
 
@@ -107,7 +116,8 @@ class AlgorithmLoader:
         data = {
             "id": self.id,
             "ip": self.ip,  
-            "encryption": name
+            "encryption": name,
+            "password": self.password,
         }
 
         self.api_caller.post("encryption/remove_encryption/", data)
