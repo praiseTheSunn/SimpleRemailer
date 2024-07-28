@@ -2,9 +2,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-# from NodeServer.Module.schemas import EmailRequest, Message
-# from NodeServer.Module.MixNode import *
-# from NodeServer.Module.SendStrategy import TimedSendStrategy
+from NodeServer.Module.schemas import EmailRequest, Message
+from NodeServer.Module.MixNode import *
 
 from Module.schemas import EmailRequest, Message
 from Module.MixNode import MixNode
@@ -32,6 +31,19 @@ moduleSym = os.path.join(module, 'Module', 'SysmetricEncryption')
 # Add your_project directory to the Python path
 sys.path.insert(0, moduleSym)
 
+module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
+sys.path.insert(0, os.path.join(module, 'Module', 'SendStrategy'))
+sys.path.insert(0, os.path.join(module, 'Module', 'PathStrategy'))
+sys.path.insert(0, os.path.join(module, 'Module', 'Email'))
+from NodeServer.Module.PathStrategy.CentralizedPathGenerationStrategy import CentralizedPathGenerationStrategy
+from NodeServer.Module.SendStrategy.TimedSendStrategy import TimedSendStrategy
+from NodeServer.Module.Email.Email import Email
+
+# module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
+# sys.path.insert(0, os.path.join(module, 'Module', 'SendStrategy'))
+# sys.path.insert(0, os.path.join(module, 'Module', 'PathStrategy'))
+# from NodeServer.Module.PathStrategy.CentralizedPathGenerationStrategy import *
+
 # Now you can import EncryptionManager
 # from NodeServer.Module.Encryption.EncryptionManager import EncryptionManager
 # from NodeServer.Module.SysmetricEncryption.SysmetricEncryptionManager import SysmetricEncryptionManager
@@ -56,9 +68,12 @@ algorithm_name = "rsa_encryption"
 public_key = managerAsym.get_public_key(algorithm_name)
 print(public_key)
 
-# send_strategy = TimedSendStrategy.TimedSendStrategy(60)
-send_strategy = None
-mix_node = MixNode(managerAsym, managerSym, send_strategy)
+send_strategy = TimedSendStrategy(10)
+
+gmail = Email()
+gmail.get_email_from_json("Storage/mail_acc.json")
+
+mix_node = MixNode(managerAsym, managerSym, send_strategy, gmail)
 
 app = FastAPI()
 
@@ -145,4 +160,6 @@ if __name__ == '__main__':
 
     # m = Message(encryption_algorithm="rsa_encryption", encrypted_content="encrypted_content", encrypted_key="encrypted_key")
     # mix_node.receive_and_add_to_queue(m)
+
+
 

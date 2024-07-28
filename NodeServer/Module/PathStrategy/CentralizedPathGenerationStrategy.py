@@ -1,7 +1,7 @@
 from PathStrategy import *
 
 
-class ProbabilisticPathSelectionStrategy(PathStrategy):
+class CentralizedPathGenerationStrategy(PathStrategy):
     def generate_path(self):
         path_length = random.randint(1, 5)
         array = [0] * path_length

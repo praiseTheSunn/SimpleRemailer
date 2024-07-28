@@ -4,3 +4,13 @@ id,encryption
 001,blowfish_encryption
 001,camellia_encryption
 001,chacha20_encryption
+002,3des_encryption
+002,aes_encryption
+002,blowfish_encryption
+002,camellia_encryption
+002,chacha20_encryption
+003,3des_encryption
+003,aes_encryption
+003,blowfish_encryption
+003,camellia_encryption
+003,chacha20_encryption

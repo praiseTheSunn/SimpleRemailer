@@ -9,8 +9,8 @@ class PathStrategy(ABC):
     def get_list_nodes(self):
         url = 'http://127.0.0.1:8000/get_list_node'
         data = {
-            'id': '',
-            'password': ''
+            'id': '001',
+            'password': '1'
         }
         response = requests.post(url, json=data)
         if response.status_code == 200:
@@ -28,10 +28,10 @@ class PathStrategy(ABC):
 
 
 if __name__ == '__main__':
-    url = url = 'http://127.0.0.1:8000/get_list_node'
+    url = url = 'http://127.0.0.1:8000/node/get_list_node'
     data = {
-        'id': '',
-        'password': ''
+        'id': '001',
+        'password': '1'
     }
     response = requests.post(url, json=data)
     if response.status_code == 200:
