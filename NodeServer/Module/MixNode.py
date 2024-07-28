@@ -12,7 +12,7 @@ import requests
 from NodeServer.Module.PathStrategy.CentralizedPathGenerationStrategy import *
 from NodeServer.Module.SendStrategy.TimedSendStrategy import *
 import base64
-# from NodeServer.Module.schemas import EmailRequest, Message, Hidden, KEncrypted
+
 from NodeServer.Module.schemas import EmailRequest, Message, Hidden, KEncrypted
 import threading
 import time
@@ -265,15 +265,21 @@ class MixNode:
             next_encrypted_content = base64.b64decode(next_encrypted_content)
             next_encrypted_key = base64.b64decode(next_encrypted_key)
             encryption_algorithm = new_path_encryption_algorithm
-        if (next_encrypted_key == b''):
-            # send email?
-            print("EMAIL:")
-            print(next_encrypted_content)
-            print("Email received successfully")
-        else:
-            self.send_strategy.get_forward_mail_list(self.forward_list, self.forward)
 
-        # self.send_strategy.get_forward_mail_list(self.forward_list, self.forward)
+
+        next_encrypted_content = base64.b64encode(next_encrypted_content)
+        next_encrypted_key = base64.b64encode(next_encrypted_key)
+        # print(next_encrypted_content)
+        # print(next_encrypted_key)
+        forward_msg = Message(
+                        encryption_algorithm=encryption_algorithm,
+            encrypted_content=next_encrypted_content,
+            encrypted_key=next_encrypted_key
+        )
+        # requests.post(f"http://{next_ip}/receiveEmail",json=forward_msg.model_dump())
+        self.forward_list.append((next_ip, forward_msg))
+
+
 
     def process_mails(self):
         while True:
@@ -287,9 +293,9 @@ class MixNode:
             time.sleep(1)
 
     def forward(self, forward_list):
-        for next_ip, forward_msg, flag_end in forward_list:
+        for next_ip, forward_msg in forward_list:
             # check flag end here to send email
-            if flag_end:
+            if forward_msg.encrypted_key == b'':
                 # send email
                 print("Email received successfully")
             else:
