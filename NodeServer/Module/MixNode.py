@@ -1,22 +1,19 @@
-from datetime import datetime
+import os, sys
+module = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(module, 'Module', 'SendStrategy'))
+sys.path.insert(0, os.path.join(module, 'Module', 'PathStrategy'))
 
+import datetime
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 from cryptography.hazmat.backends import default_backend
 import requests
-
-# from Encryption import *
-# from PathStrategy import *
-# from SendStrategy.TimedSendStrategy import *
-
-# from Module.Encryption import *
-# from Module.PathStrategy import *
-# from Module.SendStrategy.TimedSendStrategy import *
-
+from NodeServer.Module.PathStrategy.CentralizedPathGenerationStrategy import *
+from NodeServer.Module.SendStrategy.TimedSendStrategy import *
 import base64
 # from NodeServer.Module.schemas import EmailRequest, Message, Hidden, KEncrypted
-from Module.schemas import EmailRequest, Message, Hidden, KEncrypted
+from NodeServer.Module.schemas import EmailRequest, Message, Hidden, KEncrypted
 import threading
 import time
 
@@ -44,7 +41,7 @@ class MixNode:
         self.encrytion_manager = encrytion_manager
         self.forward_list = []
         self.send_strategy = send_strategy
-        # self.path_strategy = send_strategy
+        self.path_strategy = send_strategy
 
     # def get_key_pair(self, algorithm_name):
     #     private_key_pem, public_key_pem = self.asymmetric_encrytion_manager.generate_keys(algorithm_name)
@@ -274,18 +271,7 @@ class MixNode:
             print(next_encrypted_content)
             print("Email received successfully")
         else:
-
-            next_encrypted_content = base64.b64encode(next_encrypted_content)
-            next_encrypted_key = base64.b64encode(next_encrypted_key)
-            # print(next_encrypted_content)
-            # print(next_encrypted_key)
-            forward_msg = Message(
-                            encryption_algorithm=encryption_algorithm,
-                encrypted_content=next_encrypted_content,
-                encrypted_key=next_encrypted_key
-            )
-            requests.post(f"http://{next_ip}/receiveEmail",json=forward_msg.model_dump())
-            # self.forward_list.append((next_ip, forward_msg))
+            self.send_strategy.get_forward_mail_list(self.forward_list, self.forward)
 
         # self.send_strategy.get_forward_mail_list(self.forward_list, self.forward)
 
@@ -293,7 +279,7 @@ class MixNode:
         while True:
             with self.lock:
                 lists_to_forward = self.send_strategy.get_forward_mail_list(self)
-                if lists_to_forward is not None:
+                if lists_to_forward is not None and len(lists_to_forward) > 0:
                     print("Forwarding emails:")
                     self.forward(lists_to_forward)
                     self.last_send = time.time()
@@ -301,19 +287,32 @@ class MixNode:
             time.sleep(1)
 
     def forward(self, forward_list):
-        for next_ip, forward_msg in forward_list:
-            requests.post(f"http://{next_ip}/receiveEmail",json=forward_msg)
+        for next_ip, forward_msg, flag_end in forward_list:
+            # check flag end here to send email
+            if flag_end:
+                # send email
+                print("Email received successfully")
+            else:
+                requests.post(f"http://{next_ip}/receiveEmail",json=forward_msg)
 
     def stop(self):
         self.send_thread.join()
 
 if __name__ == '__main__':
     # for testing
-    timed_strategy = TimedSendStrategy(interval=30)
-    node = MixNode(strategy=timed_strategy)
+    # timed_strategy = TimedSendStrategy(interval=30)
+    # node = MixNode(strategy=timed_strategy)
+    #
+    # for i in range(35):
+    #     node.add_mail(f"Mail {i + 1}")
+    #     time.sleep(1)
+    #
+    # node.stop()
 
-    for i in range(35):
-        node.add_mail(f"Mail {i + 1}")
-        time.sleep(1)
+    import os, sys
 
-    node.stop()
+    module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
+    print(module)
+    module = os.path.join(module, 'Module', 'Encryption')
+    print(module)
+    sys.path.insert(0, module)

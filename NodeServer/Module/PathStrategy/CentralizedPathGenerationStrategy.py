@@ -1,10 +1,10 @@
 from PathStrategy import *
 
 
-class PathStrategy1(PathStrategy):
-    def generate_path(self, new_path_percentage=10):
+class ProbabilisticPathSelectionStrategy(PathStrategy):
+    def generate_path(self):
         path_length = random.randint(1, 5)
-        array = random.choices([1, 0], weights=[new_path_percentage, 100-new_path_percentage], k=path_length)
+        array = [0] * path_length
         string_array = ''.join(str(num) for num in array)
         return random.sample(self.all_nodes, path_length), string_array
 
@@ -26,13 +26,13 @@ class PathStrategy1(PathStrategy):
         return cur_nodes_list, path_str
 
 
-
+# for testing
 if __name__ == '__main__':
     all_nodes = ['Node1', 'Node2', 'Node3', 'Node4', 'Node5', 'Node6', 'Node7']
     cur_nodes = ['Node1', 'Node2', 'Node3', 'Node4']
     path_str = "1000"
 
-    path_generator = PathStrategy1(all_nodes)
+    path_generator = ProbabilisticPathSelectionStrategy(all_nodes)
     # new_path, path_string = path_generator.generate_path(new_path_percentage=10)
     # print("Generated Path:", new_path)
     # print("Path String:", path_string)
