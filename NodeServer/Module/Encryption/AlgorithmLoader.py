@@ -29,7 +29,7 @@ class AlgorithmLoader:
             os.makedirs(storage_dir)
 
     def load_algorithms(self):
-        print("Loading algorithms")
+        # print("Loading algorithms")
         sys.path.insert(0, self.algorithm_directory)
         
         if not os.path.exists(self.keys_file):
@@ -41,7 +41,7 @@ class AlgorithmLoader:
             reader = csv.reader(file)
             keys = {rows[0]: (rows[1], rows[2]) for rows in reader}
         
-        print(keys)
+        # print(keys)
 
         # List of current algorithms in the directory
         current_algorithms = set()

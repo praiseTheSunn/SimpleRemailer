@@ -6,16 +6,18 @@ const Home = () => {
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
 
-    const [encryptionAlgorithm, setEncryptionAlgorithm] = useState('AES');
+    const [encryptionAlgorithm, setEncryptionAlgorithm] = useState('rsa_encryption');
     const [mixPathAlgorithm, setMixPathAlgorithm] = useState('Algorithm 1');
     const [mixSendingStrategy, setMixSendingStrategy] = useState('Strategy 1');
 
     const [settingsVisible, setSettingsVisible] = useState(false);
 
+    var url = "http://127.0.0.1:8001/";
+
     const handleSubmit = (e) => {
         e.preventDefault();
         alert(`Email: ${email}\nSubject: ${subject}\nMessage: ${message}\nEncryption: ${encryptionAlgorithm}\nMix Path: ${mixPathAlgorithm}\nMix Strategy: ${mixSendingStrategy}`);
-        serverRequestService.sendToSendingServer(email, subject, message, encryptionAlgorithm, mixPathAlgorithm, mixSendingStrategy);
+        serverRequestService.sendToSendingServer(url, email, subject, message, encryptionAlgorithm, mixPathAlgorithm, mixSendingStrategy);
         // Here you can add the logic to send the email, e.g., using an API call
     };
 
@@ -75,9 +77,9 @@ const Home = () => {
                                 onChange={(e) => setEncryptionAlgorithm(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             >
-                                <option value="AES">AES</option>
-                                <option value="RSA">RSA</option>
-                                <option value="DES">DES</option>
+                                <option value="rsa_encryption">RSA</option>
+                                <option value="ecc_encryption">ECC</option>
+                                <option value="elgamal_encryption">Elgamal</option>
                             </select>
                         </div>
                         <div className="mb-4">
