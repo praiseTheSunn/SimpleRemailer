@@ -48,4 +48,10 @@ class RSAEncryption(AsymmetricEncryption):
         )
 
         return private_key_pem, public_key_pem
+    
+    def get_input_size(self):
+        return 190
+    
+    def get_output_size(self):
+        return 256
 

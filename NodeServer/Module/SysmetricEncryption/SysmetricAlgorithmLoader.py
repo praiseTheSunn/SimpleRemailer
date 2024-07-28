@@ -21,7 +21,7 @@ class SysmetricAlgorithmLoader:
         self.load_algorithms()
 
     def load_algorithms(self):
-        print("Loading algorithms")
+        # print("Loading algorithms")
         sys.path.insert(0, self.algorithm_directory)
         
         # List of current algorithms in the directory

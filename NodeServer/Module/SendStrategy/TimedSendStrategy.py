@@ -1,5 +1,6 @@
-from SendStrategy import *
-
+# from SendStrategy import *
+import Module.SendStrategy
+# from Module.SendStrategy import SendStrategy
 
 class TimedSendStrategy(SendStrategy):
     def __init__(self, interval):

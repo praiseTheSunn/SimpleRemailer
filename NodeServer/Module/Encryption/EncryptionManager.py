@@ -73,3 +73,26 @@ class EncryptionManager:
             raise ValueError(f"No keys found for algorithm {algorithm_name}")
         private_key_pem = self.keys[algorithm_name]['private']
         return algorithm.decrypt(private_key_pem, data)
+    
+
+    def get_public_key(self, algorithm_name):
+        if algorithm_name not in self.keys:
+            raise ValueError(f"No keys found for algorithm {algorithm_name}")
+        return self.keys[algorithm_name]['public']
+    
+    def get_private_key(self, algorithm_name):
+        if algorithm_name not in self.keys:
+            raise ValueError(f"No keys found for algorithm {algorithm_name}")
+        return self.keys[algorithm_name]['private']
+    
+    def get_output_size(self, algorithm_name):
+        algorithm = self.loader.get_algorithm(algorithm_name)
+        if not algorithm:
+            raise ValueError(f"Algorithm {algorithm_name} not found")
+        return algorithm.get_output_size()
+    
+    def get_input_size(self, algorithm_name):
+        algorithm = self.loader.get_algorithm(algorithm_name)
+        if not algorithm:
+            raise ValueError(f"Algorithm {algorithm_name} not found")
+        return algorithm.get_input_size()

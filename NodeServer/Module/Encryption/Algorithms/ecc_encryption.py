@@ -78,3 +78,9 @@ class ECCEncryption(AsymmetricEncryption):
     @staticmethod
     def _xor_bytes(data, key):
         return bytes(a ^ b for a, b in zip(data, key))
+
+    def get_input_size(self):
+        return 32
+    
+    def get_output_size(self):
+        return 249
