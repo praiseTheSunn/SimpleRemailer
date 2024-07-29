@@ -88,10 +88,13 @@ class MixNode:
 
         return encrypted_data
 
-    def get_cur_id(self):
+    def get_cur_id_ip(self):
         with open("Storage/config.json", 'r') as file:
             data = json.load(file)
-        return data["id"]
+
+        pattern = r"http://localhost:(\d+)"
+        ip = re.sub(pattern, r"127.0.0.1:\1", data["ip"])
+        return data["id"], ip
 
     # Function to decrypt data with a given private key
     def decrypt_with_key(self, algorithm_name: str, private_key, encrypted_data: bytes) -> bytes:
@@ -161,9 +164,9 @@ class MixNode:
 
         encrypted_data = kencrypted_bytes
         for i in range(0, len(symmetric_keys)):
-            print("?????", encrypted_data)
+            # print("?????", encrypted_data)
             encrypted_data = self.encrypt_with_key(algorithm_name, public_keys[i], encrypted_data)
-            print("ENCRYPTED DATA: ", encrypted_data)
+            # print("ENCRYPTED DATA: ", encrypted_data)
 
             if (i == len(symmetric_keys) - 1):
                 break
@@ -276,18 +279,19 @@ class MixNode:
         # print(next_ip, next_encrypted_content)
 
         # print(encryption_algorithm, decrypted_symmetric_key, next_node_encrypted_key, next_ip, next_encrypted_content)
-        my_id = self.get_cur_id()
+        my_id = self.get_cur_id_ip()[0]
 
         if (flag_begin):
             # create path
-            print("PATH:")
 
+            # print("PATH:")
             new_nodes, new_path_flag = self.path_strategy.get_path(flag_begin)
-            print("new nodes:", new_nodes)
-            print("new path:", new_path_flag)
+            # print("new nodes raw:", new_nodes)
+            # print("new flag:", new_path_flag)
+            # print(my_id)
 
-            print(my_id)
             if my_id == new_nodes[-1]['id']:
+                # cant send to itself
                 new_nodes.pop()
                 new_path_flag.pop()
 
@@ -295,12 +299,10 @@ class MixNode:
                 print("ERROR: KHONG MATCH nodes vs path")
 
             # new_nodes_str = [self.filter_node_info(node) for node in new_nodes]
-
-
-
             pattern = r"http://localhost:(\d+)"
             paths = [re.sub(pattern, r"127.0.0.1:\1", node['ip']) for node in new_nodes]
-            print("paths:", paths)
+            print("New path: ", paths)
+            print("New flag:", new_path_flag)
             paths_bytes = [bytes(path, 'utf-8') for path in paths]
             new_path_encryption_algorithm = self.asymmetric_algorithm_name
 
@@ -309,15 +311,14 @@ class MixNode:
                 symmetric_keys.append(self.symmetric_encryption_manager.generate_keys(self.symmetric_algorithm_name))
 
             public_keys = [self.get_public_key(node) for node in new_nodes]
-            print("public keys:", public_keys)
-            # public_keys = [bytes(key, 'utf-8') for key in public_keys]
+            # print("public keys:", public_keys)
 
             next_encrypted_content = self.symmetric_multi_layer_encrypt(symmetric_keys, paths_bytes, new_path_flag,
                                                                         next_encrypted_content)
-            print("DONE ENCRYPTED CONTENT")
+            # print("DONE ENCRYPTED CONTENT")
             next_encrypted_key = self.asymmetric_multi_layer_encrypt(new_path_encryption_algorithm, public_keys,
                                                                      symmetric_keys)
-            print("DONE ENCRYPTED KEY")
+            # print("DONE ENCRYPTED KEY")
 
             next_ip = paths[-1]
             next_encrypted_content = base64.b64decode(next_encrypted_content)
@@ -343,7 +344,7 @@ class MixNode:
             with self.lock:
                 lists_to_forward = self.send_strategy.get_forward_mail_list(self)
                 if lists_to_forward is not None and len(lists_to_forward) > 0:
-                    # print("Forwarding emails:")
+                    # print("Running in new thread to forward/send...:")
                     self.forward(lists_to_forward)
                     self.last_send = datetime.now()
 
@@ -353,14 +354,17 @@ class MixNode:
         for next_ip, forward_msg in forward_list:
             # check flag end here to send email
             print(next_ip, forward_msg)
+
+            my_ip = self.get_cur_id_ip()[1]
             if forward_msg.encrypted_key == '':
                 # send email
-                print("Sending email:\n", forward_msg.encrypted_content)
+                print(f"\tThis is last node\n\tSending email from {my_ip}...\n", forward_msg.encrypted_content)
                 msg_dict = json.loads(forward_msg.encrypted_content)
                 self.email.send_email(msg_dict["email"], msg_dict["subject"],
                                       msg_dict["message"])
             else:
-                print(f"Fw: http://{next_ip}/receiveEmail")
+
+                print(f"\tForward from {my_ip} to: {next_ip}")
                 requests.post(f"http://{next_ip}/receiveEmail", json=forward_msg.model_dump())
 
     def stop(self):

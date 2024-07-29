@@ -3,7 +3,7 @@ from PathStrategy import *
 
 class NonProbabilisticPathGenerationStrategy(PathStrategy):
     def generate_path(self):
-        path_length = random.randint(0, min(len(self.all_nodes), 3))
+        path_length = random.randint(2, min(len(self.all_nodes), 5))
         bool_array = [False] * path_length
         # bool_array = [random.choice([True, False]) for _ in range(path_length)]
         return random.sample(self.all_nodes, path_length), bool_array

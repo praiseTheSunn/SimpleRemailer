@@ -2,6 +2,7 @@ from PathStrategy import *
 
 
 class HighSecurityPathStrategy(PathStrategy):
+    # not done yet
     def generate_path(self, path_length):
         secure_nodes = [node for node in self.nodes if 'secure' in node.get('tags', [])]
         if len(secure_nodes) < path_length:

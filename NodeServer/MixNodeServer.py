@@ -14,71 +14,39 @@ import os
 
 # Get the absolute path of the project root directory
 module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-
-# Construct the path to the Module/Encryption directory
 moduleAsym = os.path.join(module, 'Module', 'Encryption')
-
-# Construct the path to the Module/Encryption directory
 modulePath = os.path.join(module, 'Module')
 sys.path.insert(0, modulePath)
-
-# Add the Module/Encryption directory to the Python path
 sys.path.insert(0, moduleAsym)
-
-# Construct the path to the your_project directory
 moduleSym = os.path.join(module, 'Module', 'SysmetricEncryption')
-
-# Add your_project directory to the Python path
 sys.path.insert(0, moduleSym)
 
 module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 sys.path.insert(0, os.path.join(module, 'Module', 'SendStrategy'))
 sys.path.insert(0, os.path.join(module, 'Module', 'PathStrategy'))
 sys.path.insert(0, os.path.join(module, 'Module', 'Email'))
-from NodeServer.Module.PathStrategy.CentralizedPathGenerationStrategy import CentralizedPathGenerationStrategy
+from NodeServer.Module.PathStrategy.NonProbabilisticPathGenerationStrategy import NonProbabilisticPathGenerationStrategy
 from NodeServer.Module.SendStrategy.TimedSendStrategy import TimedSendStrategy
 from NodeServer.Module.Email.Email import Email
-
-# module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
-# sys.path.insert(0, os.path.join(module, 'Module', 'SendStrategy'))
-# sys.path.insert(0, os.path.join(module, 'Module', 'PathStrategy'))
-# from NodeServer.Module.PathStrategy.CentralizedPathGenerationStrategy import *
-
-# Now you can import EncryptionManager
-# from NodeServer.Module.Encryption.EncryptionManager import EncryptionManager
-# from NodeServer.Module.SysmetricEncryption.SysmetricEncryptionManager import SysmetricEncryptionManager
-
-# Now you can import EncryptionManager
 from EncryptionManager import EncryptionManager
-# Now you can import EncryptionManager
 from SysmetricEncryptionManager import SysmetricEncryptionManager
 
-
-# Assuming algorithm classes are in the 'Algorithms' directory
 managerAsym = EncryptionManager(os.path.join(moduleAsym, 'Algorithms'))
-# Assuming algorithm classes are in the 'Algorithms' directory
 managerSym = SysmetricEncryptionManager(os.path.join(moduleSym, 'Algorithms'))
-
-# Get the list of available algorithms
-available_algorithms = managerAsym.get_available_algorithms()
-print(f"Available algorithms: {available_algorithms}")
-
 algorithm_name = "rsa_encryption"
 
-public_key = managerAsym.get_public_key(algorithm_name)
-print(public_key)
+# public_key = managerAsym.get_public_key(algorithm_name)
+# print(public_key)
 
 send_strategy = TimedSendStrategy(10)
 
 gmail = Email()
 gmail.get_email_from_json("Storage/mail_acc.json")
 
-mix_node = MixNode(asymmetric_encrytion_manager=managerAsym, symmetric_encryption_manager=managerSym, send_strategy=send_strategy, email=gmail, path_strategy=CentralizedPathGenerationStrategy())
+mix_node = MixNode(asymmetric_encrytion_manager=managerAsym, symmetric_encryption_manager=managerSym, send_strategy=send_strategy, email=gmail, path_strategy=NonProbabilisticPathGenerationStrategy())
+
 
 app = FastAPI()
-
-# pathDeterminator = PathDeterminator(FullPathStrategy())
-
 # Configure CORS settings
 app.add_middleware(
     CORSMiddleware,
@@ -171,11 +139,21 @@ async def update_asymmetric_algorithm(algorithm_name: str):
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
 
-if __name__ == '__main__':
-    uvicorn.run(app, host="0.0.0.0", port=8001)  # , ssl_certfile="cert.pem", ssl_keyfile="key.pem")
+def get_beginning_info():
+    with open("Storage/config.json", 'r') as file:
+        data = json.load(file)
 
-    # m = Message(encryption_algorithm="rsa_encryption", encrypted_content="encrypted_content", encrypted_key="encrypted_key")
-    # mix_node.receive_and_add_to_queue(m)
+    id, ip = data["id"], re.sub(r"http://localhost:(\d+)", r"127.0.0.1:\1", data["ip"])
+    print(f"THIS IS A MIX NODE\n\t- id: {id}\t- ip: {ip}")
+
+    # Get the list of available algorithms
+    available_algorithms = managerAsym.get_available_algorithms()
+    print(f"\tAvailable algorithms:\n\t\tAsymmetric:{available_algorithms}")
+    print(f"\t\tSysmetric:{managerSym.get_available_algorithms()}")
+
+if __name__ == '__main__':
+    get_beginning_info()
+    uvicorn.run(app, host="0.0.0.0", port=8001)  # , ssl_certfile="cert.pem", ssl_keyfile="key.pem")
 
 
 
