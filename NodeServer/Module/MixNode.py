@@ -38,6 +38,7 @@ class MixNode:
         self.last_send = datetime.now()
 
         self.symmetric_algorithm_name = "aes_encryption"
+        self.asymmetric_algorithm_name = "rsa_encryption"
 
 
     def update(self, encrytion_manager, send_strategy):
@@ -45,6 +46,12 @@ class MixNode:
         self.forward_list = []
         self.send_strategy = send_strategy
         # self.path_strategy = send_strategy
+
+    def update_symmetric_algorithm(self, algorithm_name):
+        self.symmetric_algorithm_name = algorithm_name
+
+    def update_asymmetric_algorithm(self, algorithm_name):
+        self.asymmetric_algorithm_name = algorithm_name
 
     # def get_key_pair(self, algorithm_name):
     #     private_key_pem, public_key_pem = self.asymmetric_encrytion_manager.generate_keys(algorithm_name)
@@ -238,19 +245,19 @@ class MixNode:
             paths = ['127.0.0.1:8002', '127.0.0.1:8003', '127.0.0.1:8004']
             paths_bytes = [bytes(path, 'utf-8') for path in paths]
             flags = [False for i in range(3)]
-            new_path_encryption_algorithm = "ecc_encryption"
+            new_path_encryption_algorithm = self.asymmetric_algorithm_name
 
             symmetric_keys = []
             for i in range(3):
                 symmetric_keys.append(self.symmetric_encryption_manager.generate_keys(self.symmetric_algorithm_name))
             # public keys for rsa_encryption
-            # public_keys = ['-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyQTNYjMhVgL40Ri9s4ed\nYn3lpxh2mqhmns4Vvg+t4/sccRSTMYx4CGLugv9G4MqG5BpHYlnlGv5uTgtCzbqS\nHFLaB5Wh5GgDRpUOjA8fW5dpnNDle6g5AtjRCiRGcvnF+Bo9Kp7ESQ/AMCoWVhY4\nAFRYAw+qcIQEUDgQs755H7woJEj1oh4lvVnYOAYdAb78177KViu8XVWpDB77vsP7\nOfjnL2Y0OLLOBTDV1IzeMPKsUfJxFxXO66G7toEJCvxT6yTe8TVKq3vertN+S74l\naHBzYQLKU+QVt2YMlDAz73RhsBRjFUxAVJyHhGtMJS7Fyvg/oLLtQcSVShgAnNFX\nGwIDAQAB\n-----END PUBLIC KEY-----\n',
-                        #    '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5//lcp8ilZOAv2npT9x9\n6XYoUH/sRO1/CGf1fNSCNpuUUTFWDb5l0w92qJ0tG7s1z6/R0TJu/a1GcaVmtjH6\nSjSyQKNZkGUFPhrb7iq+2EMF6Q268BYqPKmXaNEHxHk/3LhYOcbm0DgjO+A/wxRz\n3LABNkEG0JLfCKoVhLFgSKJpZf9jzQSWdcIMeur0mhfVocVOgq3/JF0rdy4JrnBH\n3C1LKPzRokPKQHftLYp6r2yq7tz07f6PVde/oTkGToQBlKy0WuGr7wTAllWl24pQ\n/HI0FSZu3NW+HmMZPnwPnYvhZaRhMBxY51haV2HeofudT9MTzBcw0RZ4fzPNXNeR\nxQIDAQAB\n-----END PUBLIC KEY-----\n',
-                        #    '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3ToZ4I+N5ABffAdGz4bW\nV7xLcnhz0m0k5O6H9JvDNEAqt6z76zQX09UWRd2xHieQX+E3xpp7Y1D1aWjieQly\nxOV6HR/vjvdA6df3kMBiwS61ZfmFd8TjO0hPXD04+7Dxy5eW5y/GiuubFXSsnBBO\n3uLvz2q3Jkf6WVYSLoe2SfPR/jVUjxyQU26uS6XyV8v8vKW+59a6UG7X8Rsj13LS\npScsZ7qDv0sFmkTN0pLzbl5wVlJQ/m7bDCNu6X2laM4IvUt9G+fUOdPp5lI4jHPJ\nrJxk6lW1CeMXgDdYWDTHz5+0BNgnO5h9tH6jBohXBb5i+kDXBnzkjiuwdxEPX6EI\nawIDAQAB\n-----END PUBLIC KEY-----\n']
+            public_keys = ['-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtNAvzHVuitTxli0hqgwI\nnlR+ZHPrZwTk1egy/Ir6pMzeMgQCo5c3TB5fML+M29CPuKrlLBqes2mM3b60IVdZ\n4fHcM3y/HQPfu3AK7xBb2/pnUb3qJuSTScbdyuGaHpMtMHHIetEkwiIJx1zGuJ20\nP8r4Ju3RnLVMH0w0IovT8eHmYUG6hQxw6Dih2q+8SR1D0Y1IsymliK3Ofuyajm9z\n8H9Qw8UgJ9YShd8IiINoVRIeAp1GUExwM6O361OkW+Psql9Z2hB1IjEeP2ZJ9rhi\nrENXmSbtj5OVfXjdPwfqwCdzAlrMR4po5OKnOOT4MZ2XwG7ATtYt4Y8IStvTHADK\nUwIDAQAB\n-----END PUBLIC KEY-----\n',
+                           '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2KvmsrE3pwH/woQAv0Fs\nHvRP4CkdWh61JdagLCbyRDZKWck7DflwRhyU2FnFHNY5yWAC3TlIjGv7UTWxSAev\nosp7OZmayGoQTLoAwMrYlykPchvLeOkX1Y0+dILjuIrcn+qDOYzjJMC6/7nUIQJR\nCBVeJipSqisZFnOx5LlNQclo0hKjWJGxlntxzoX3bCTlqvMhvO1QOwaJ1a2JWSq3\niX1cmg3rUH0ySzSKOnKOffbcJBC2oQJg/sL0eo72kaXzlvAcGO9bzjNx8bLOro4H\n9r89r2EEph6fSkb+BS0OpCs/ZU2Lz0tTYuZK81TuQAbLyQBSYaDVvksbljmU2KEc\nZwIDAQAB\n-----END PUBLIC KEY-----\n',
+                           '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqv/KCU27xJFRyeI/xYyU\nRvuJjnGpA3mhqKAlORBQK/A0z37Y3YVGC0c8HgOdHBGIhmK2h1PdX6uxmjbaae+4\nvfS2RCT9T7woxeAoHXO+5idgHNgYysmtrcMiPQiFhqZyx2lOMJ24pbXXGlP6mEgm\nB/IreP7lkPB4yYOmYg5qjhWafDk7xul9bUnitxsDeKCyc1jxS87gICnCt93pkmnq\nPNj01g55C7jsIIimoo7++47SaWweOK4/CTez6xclwu4B3frDFCCcCitZGmzV9+xD\n6wqlPr4HEYkQYiPsFakV69Ow7qIRZdjzywh4luli9B5Rwkqqgn6jI/Hr5TUAA078\npwIDAQAB\n-----END PUBLIC KEY-----\n']
             # public keys for ecc_encryption
-            public_keys = ['-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEiQKIgwn/HdCd9Nz8WYpWNlq937/q\nTqWCFjPCxrTwJsp+dPQRPnf1E+/F8g5lRrqSfPwqtO5IvxWpcJE1xOUXwQ==\n-----END PUBLIC KEY-----\n',
-                           '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3+nu0RDJIYXWBtLv9h303aax44zX\nevCgcoXVgCLUnPDB7O7MkrjE0DkidO4StfSr5IXkMIIZWjEgR9I3ItvCxQ==\n-----END PUBLIC KEY-----\n',
-                           '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEeNyPACiZBVqH6PBOrgITDBRVCp6I\nfMHDMDtKzsID0huj/w6XX1OrLHVHqaWzCMM0E1KhABZ8UnlrVHX4GfwzhQ==\n-----END PUBLIC KEY-----\n']
+            # public_keys = ['-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEiQKIgwn/HdCd9Nz8WYpWNlq937/q\nTqWCFjPCxrTwJsp+dPQRPnf1E+/F8g5lRrqSfPwqtO5IvxWpcJE1xOUXwQ==\n-----END PUBLIC KEY-----\n',
+                        #    '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3+nu0RDJIYXWBtLv9h303aax44zX\nevCgcoXVgCLUnPDB7O7MkrjE0DkidO4StfSr5IXkMIIZWjEgR9I3ItvCxQ==\n-----END PUBLIC KEY-----\n',
+                        #    '-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEeNyPACiZBVqH6PBOrgITDBRVCp6I\nfMHDMDtKzsID0huj/w6XX1OrLHVHqaWzCMM0E1KhABZ8UnlrVHX4GfwzhQ==\n-----END PUBLIC KEY-----\n']
             # public keys for rsa_oaep_encryption
             # public_keys = [
             #     '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyQTNYjMhVgL40Ri9s4ed\nYn3lpxh2mqhmns4Vvg+t4/sccRSTMYx4CGLugv9G4MqG5BpHYlnlGv5uTgtCzbqS\nHFLaB5Wh5GgDRpUOjA8fW5dpnNDle6g5AtjRCiRGcvnF+Bo9Kp7ESQ/AMCoWVhY4\nAFRYAw+qcIQEUDgQs755H7woJEj1oh4lvVnYOAYdAb78177KViu8XVWpDB77vsP7\nOfjnL2Y0OLLOBTDV1IzeMPKsUfJxFxXO66G7toEJCvxT6yTe8TVKq3vertN+S74l\naHBzYQLKU+QVt2YMlDAz73RhsBRjFUxAVJyHhGtMJS7Fyvg/oLLtQcSVShgAnNFX\nGwIDAQAB\n-----END PUBLIC KEY-----\n',

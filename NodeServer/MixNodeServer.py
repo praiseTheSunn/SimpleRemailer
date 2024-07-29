@@ -110,6 +110,22 @@ async def receive_email(message: Message):
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/updateSymmetricAlgorithm")
+async def update_symmetric_algorithm(algorithm_name: str):
+    try:
+        mix_node.update_symmetric_algorithm(algorithm_name)
+        return {"status": "success", "message": "Symmetric algorithm updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/updateAsymmetricAlgorithm")
+async def update_asymmetric_algorithm(algorithm_name: str):
+    try:
+        mix_node.update_asymmetric_algorithm(algorithm_name)
+        return {"status": "success", "message": "Asymmetric algorithm updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # class StrategyRequest(BaseModel):
 #     strategy: str

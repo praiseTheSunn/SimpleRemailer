@@ -7,6 +7,7 @@ const Home = () => {
     const [message, setMessage] = useState('');
 
     const [encryptionAlgorithm, setEncryptionAlgorithm] = useState('rsa_encryption');
+    const [symmetricAlgorithm, setSymmetricAlgorithm] = useState('aes_encryption');
     const [mixPathAlgorithm, setMixPathAlgorithm] = useState('Algorithm 1');
     const [mixSendingStrategy, setMixSendingStrategy] = useState('Strategy 1');
 
@@ -17,12 +18,32 @@ const Home = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         alert(`Email: ${email}\nSubject: ${subject}\nMessage: ${message}\nEncryption: ${encryptionAlgorithm}\nMix Path: ${mixPathAlgorithm}\nMix Strategy: ${mixSendingStrategy}`);
+        updateAsymmetricAlgorithm(encryptionAlgorithm);
         serverRequestService.sendToSendingServer(url, email, subject, message, encryptionAlgorithm, mixPathAlgorithm, mixSendingStrategy);
+        
         // Here you can add the logic to send the email, e.g., using an API call
     };
 
     const toggleSettingsVisibility = () => {
         setSettingsVisible(!settingsVisible);
+    };
+
+    const handleAsymmetricAlgorithmChange = (e) => {
+        setEncryptionAlgorithm(e.target.value);
+    };
+
+    const updateAsymmetricAlgorithm = async (algorithm) => {
+        try {
+            const response = await fetch(`${url}updateAsymmetricAlgorithm?algorithm_name=${algorithm}`);
+            const result = await response.json();
+            if (response.ok) {
+                console.log(result.message);
+            } else {
+                console.error(result.detail);
+            }
+        } catch (error) {
+            console.error("Error updating algorithm:", error);
+        }
     };
 
     return (
@@ -69,17 +90,29 @@ const Home = () => {
                 </div>
                 {settingsVisible && (
                     <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md ml-8">
-                        <h2 className="text-2xl font-semibold mb-6">Settings</h2>
+                        <h2 className="text-2xl font-semibold mb-6">User Settings</h2>
                         <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Encryption Algorithm</label>
+                            <label className="block text-gray-700 mb-2">Asymmetric Encryption Algorithm</label>
                             <select
                                 value={encryptionAlgorithm}
-                                onChange={(e) => setEncryptionAlgorithm(e.target.value)}
+                                onChange={handleAsymmetricAlgorithmChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             >
                                 <option value="rsa_encryption">RSA</option>
                                 <option value="ecc_encryption">ECC</option>
                                 <option value="elgamal_encryption">Elgamal</option>
+                            </select>
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 mb-2">Symmetric Encryption Algorithm</label>
+                            <select
+                                value={symmetricAlgorithm}
+                                onChange={(e) => setSymmetricAlgorithm(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                            >
+                                <option value="aes_encryption">AES</option>
+                                <option value="des_encryption">DES</option>
+                                <option value="blowfish_encryption">Blowfish</option>
                             </select>
                         </div>
                         <div className="mb-4">
@@ -89,11 +122,12 @@ const Home = () => {
                                 onChange={(e) => setMixPathAlgorithm(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             >
-                                <option value="Algorithm 1">Algorithm 1</option>
-                                <option value="Algorithm 2">Algorithm 2</option>
-                                <option value="Algorithm 3">Algorithm 3</option>
+                                <option value="Algorithm 1">Probabilistic Stategy</option>
+                                <option value="Algorithm 2">Non-probabilistic Strategy</option>
+                                {/* <option value="Algorithm 3">Algorithm 3</option> */}
                             </select>
                         </div>
+                        <h2 className="text-2xl font-semibold mb-6">Admin Settings</h2>
                         <div className="mb-4">
                             <label className="block text-gray-700 mb-2">Mix Sending Strategy</label>
                             <select
@@ -101,9 +135,9 @@ const Home = () => {
                                 onChange={(e) => setMixSendingStrategy(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             >
-                                <option value="Strategy 1">Strategy 1</option>
-                                <option value="Strategy 2">Strategy 2</option>
-                                <option value="Strategy 3">Strategy 3</option>
+                                <option value="Strategy 1">Threshold Strategy</option>
+                                <option value="Strategy 2">Timed Strategy</option>
+                                {/* <option value="Strategy 3">Strategy 3</option> */}
                             </select>
                         </div>
                     </div>
