@@ -73,7 +73,7 @@ send_strategy = TimedSendStrategy(10)
 gmail = Email()
 gmail.get_email_from_json("Storage/mail_acc.json")
 
-mix_node = MixNode(managerAsym, managerSym, send_strategy, gmail)
+mix_node = MixNode(asymmetric_encrytion_manager=managerAsym, symmetric_encryption_manager=managerSym, send_strategy=send_strategy, email=gmail, path_strategy=CentralizedPathGenerationStrategy())
 
 app = FastAPI()
 
