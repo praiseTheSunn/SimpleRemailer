@@ -74,7 +74,8 @@ async def get_list_node(request: Request):
                 'nickname': row.get('nickname', ''),
                 'status': row.get('status', ''),
                 'asymmetric_encryptions': [],
-                'symmetric_encryptions': []
+                'symmetric_encryptions': [],
+                'ip': ''  # Initialize IP address as empty
             }
 
         # Process data_node for asymmetric encryption and public keys
@@ -85,6 +86,8 @@ async def get_list_node(request: Request):
                     'encryption': row.get('encryption', ''),
                     'public_key': row.get('public_key', '')
                 })
+                node_data[node_id]['ip'] = row.get('ip', '')  # Add IP address
+
 
         # Process data_symmetric_encryption for symmetric encryption methods
         for row in data_symmetric_encryption:
