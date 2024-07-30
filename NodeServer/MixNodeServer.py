@@ -1,14 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-
-from NodeServer.Module.schemas import EmailRequest, Message
-from NodeServer.Module.MixNode import *
-
-from Module.schemas import EmailRequest, Message
-from Module.MixNode import MixNode
-# from Module.SendStrategy import TimedSendStrategy
-
 import sys
 import os
 
@@ -25,9 +17,17 @@ module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
 sys.path.insert(0, os.path.join(module, 'Module', 'SendStrategy'))
 sys.path.insert(0, os.path.join(module, 'Module', 'PathStrategy'))
 sys.path.insert(0, os.path.join(module, 'Module', 'Email'))
-from NodeServer.Module.PathStrategy.NonProbabilisticPathGenerationStrategy import NonProbabilisticPathGenerationStrategy
-from NodeServer.Module.SendStrategy.TimedSendStrategy import TimedSendStrategy
-from NodeServer.Module.Email.Email import Email
+
+# print("Check all paths in sys path:")
+# for path in sys.path:
+#     print("\t- ", path)
+
+from Module.MixNode import *
+from Module.schemas import EmailRequest, Message
+from Module.MixNode import MixNode
+from NonProbabilisticPathGenerationStrategy import NonProbabilisticPathGenerationStrategy
+from TimedSendStrategy import TimedSendStrategy
+from Email import Email
 from EncryptionManager import EncryptionManager
 from SysmetricEncryptionManager import SysmetricEncryptionManager
 
@@ -41,7 +41,7 @@ algorithm_name = "rsa_encryption"
 send_strategy = TimedSendStrategy(10)
 
 gmail = Email()
-gmail.get_email_from_json("Storage/mail_acc.json")
+gmail.get_email_from_json(STORAGE_PATH + "mail_acc.json")
 
 mix_node = MixNode(asymmetric_encrytion_manager=managerAsym, symmetric_encryption_manager=managerSym, send_strategy=send_strategy, email=gmail, path_strategy=NonProbabilisticPathGenerationStrategy())
 
@@ -139,8 +139,9 @@ async def update_asymmetric_algorithm(algorithm_name: str):
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
 
+
 def get_beginning_info():
-    with open("Storage/config.json", 'r') as file:
+    with open(STORAGE_PATH + "config.json", 'r') as file:
         data = json.load(file)
 
     id, ip = data["id"], re.sub(r"http://localhost:(\d+)", r"127.0.0.1:\1", data["ip"])

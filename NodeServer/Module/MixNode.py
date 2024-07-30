@@ -13,7 +13,7 @@ import requests
 
 import base64
 
-from NodeServer.Module.schemas import EmailRequest, Message, Hidden, KEncrypted
+from schemas import EmailRequest, Message, Hidden, KEncrypted
 import threading
 import time
 
@@ -22,6 +22,7 @@ import json
 import re
 
 DIGEST_SIZE = hashes.SHA256().digest_size
+STORAGE_PATH = "NodeServer/Storage/"
 
 
 class MixNode:
@@ -89,7 +90,7 @@ class MixNode:
         return encrypted_data
 
     def get_cur_id_ip(self):
-        with open("Storage/config.json", 'r') as file:
+        with open(STORAGE_PATH + "config.json", 'r') as file:
             data = json.load(file)
 
         pattern = r"http://localhost:(\d+)"
