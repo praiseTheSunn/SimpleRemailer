@@ -104,7 +104,7 @@ async def receive_email(message: Message):
         mix_node.receive_and_add_to_queue(message)
         return {"status": "success", "message": "Email received successfully"}
     except Exception as e:
-        # logger.error(f"MIX_NODE {ID}: Error receiving email: {str(e)}")
+        logger.error(f"MIX_NODE {ID}: Error receiving email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
     
