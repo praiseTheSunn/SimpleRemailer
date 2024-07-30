@@ -8,6 +8,7 @@ Remailer project for the university course Computer Security and Software Design
 `python NodeServer/MixNodeServer.py`  
 `python NodeServer2/MixNodeServer.py`   
 `python NodeServer3/MixNodeServer.py`
+`python NodeServer4/MixNodeServer.py`
 
 ### Run database server
 `python DatabaseServer/main.py`
@@ -19,9 +20,5 @@ Remailer project for the university course Computer Security and Software Design
 
 ## Demo script
 - Kịch bản 1: rsa, aes, time-send=10, non-probabilitic generation path, 2 thư
-- Kịch bản 2: ecc, blow-fish, time-send=60, probabilitic generation path, 2 thư
-- Kịch bản 3: ecc, blow-fish, threshold=3, non-probabilitic generation path, 3 thư
-    
+- Kịch bản 2: ecc, blow-fish, threshold=2, probabilitic generation path, 2 thư
 ``npm start``
-
-cd /d D:\TKPM\SimpleRemailer\frontend

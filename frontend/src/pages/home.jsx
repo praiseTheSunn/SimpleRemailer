@@ -18,7 +18,7 @@ const Home = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // alert(`Email: ${email}\nSubject: ${subject}\nMessage: ${message}\nEncryption: ${encryptionAlgorithm}\nMix Path: ${mixPathAlgorithm}\nMix Strategy: ${mixSendingStrategy}`);
+        alert(`Sent to first node!`);
         updateAsymmetricAlgorithm(encryptionAlgorithm);
         // updateSymmetricAlgorithm(symmetricAlgorithm);
         updateMixPathAlgorithm(mixPathAlgorithm);
@@ -174,26 +174,28 @@ const Home = () => {
                             </select>
                         </div>
                         <h2 className="text-2xl font-semibold mb-6">Admin Settings</h2>
-<div className="mb-4">
-    <label className="block text-gray-700 mb-2">Mix Sending Strategy</label>
-    <div className="flex items-center">
-        <select
-            value={mixSendingStrategy}
-            onChange={(e) => setMixSendingStrategy(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md mr-4"
-        >
-            <option value="threshold">Threshold Strategy</option>
-            <option value="timed">Timed Strategy</option>
-            {/* <option value="Strategy 3">Strategy 3</option> */}
-        </select>
-        <input
-            type="number"
-            value={numberValue}
-            onChange={(e) => setNumberValue(e.target.value)}
-            className="w-20 px-3 py-2 border border-gray-300 rounded-md"
-        />
-    </div>
-</div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 mb-2">Mix Sending Strategy</label>
+                            <div className="flex items-center">
+                                <select
+                                    value={mixSendingStrategy}
+                                    onChange={(e) => setMixSendingStrategy(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md mr-4"
+                                >
+                                    <option value="threshold">Threshold Strategy</option>
+                                    <option value="timed">Timed Strategy</option>
+                                    <option value="a">Pool Strategy</option>
+                                    <option value="a">Binomial Strategy</option>
+                                    {/* <option value="Strategy 3">Strategy 3</option> */}
+                                </select>
+                                <input
+                                    type="number"
+                                    value={numberValue}
+                                    onChange={(e) => setNumberValue(e.target.value)}
+                                    className="w-20 px-3 py-2 border border-gray-300 rounded-md"
+                                />
+                            </div>
+                        </div>
 
 
                     </div>
