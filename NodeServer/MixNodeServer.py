@@ -127,37 +127,6 @@ async def update_asymmetric_algorithm(algorithm_name: str):
         logger.error(f"MIX_NODE {ID}: Error updating asymmetric algorithm: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# class StrategyRequest(BaseModel):
-#     strategy: str
-#     i: int = 1
-
-# @app.post("/set_strategy")
-# async def set_strategy(request: StrategyRequest):
-#     if request.strategy == 'full':
-#         pathDeterminator.set_strategy(FullPathStrategy())
-#     elif request.strategy == 'partial':
-#         pathDeterminator.set_strategy(PartialPathStrategy(request.i))
-#     else:
-#         raise HTTPException(status_code=400, detail="Unknown strategy")
-#     return {"message": "Strategy updated"}
-
-# @app.post("/sendEmail")
-# async def send_email(request: EmailRequest):
-#     try:
-#         email_sent = True  # Mocking the email sending logic
-#         path = pathDeterminator.determine_path()
-#         print(request, path)
-
-#         if email_sent:
-#             return {"status": "success", "message": "Email sent successfully"}
-#         else:
-#             raise HTTPException(status_code=500, detail="Failed to send email")
-
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-
 def get_beginning_info():
     try:
         with open(config_file, 'r') as file:
