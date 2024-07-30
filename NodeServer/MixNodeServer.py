@@ -38,6 +38,7 @@ from Module.MixNode import MixNode
 from NonProbabilisticPathGenerationStrategy import NonProbabilisticPathGenerationStrategy
 from ProbabilisticPathSelectionStrategy import ProbabilisticPathGenerationStrategy
 from TimedSendStrategy import TimedSendStrategy
+from ThresholdSendStrategy import ThresholdSendStrategy
 from Email import Email
 from EncryptionManager import EncryptionManager
 from SysmetricEncryptionManager import SysmetricEncryptionManager
@@ -129,11 +130,14 @@ async def update_asymmetric_algorithm(algorithm_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/updateSendStrategy")
-async def update_send_strategy(strategy_name: str):
+async def update_send_strategy(strategy_name: str, value: int):
     try:
         if (strategy_name == "timed"):
-            mix_node.update_send_strategy(TimedSendStrategy(10))
+            mix_node.update_send_strategy(TimedSendStrategy(value))
             logger.info(f"MIX_NODE {ID}: Send strategy updated to timed.")
+        elif (strategy_name == "threshold"):
+            mix_node.update_send_strategy(ThresholdSendStrategy(value))
+            logger.info(f"MIX_NODE {ID}: Send strategy updated to threshold.")
         return {"status": "success", "message": "Send strategy updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

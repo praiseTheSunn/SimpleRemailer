@@ -10,6 +10,7 @@ const Home = () => {
     const [symmetricAlgorithm, setSymmetricAlgorithm] = useState('aes_encryption');
     const [mixPathAlgorithm, setMixPathAlgorithm] = useState('probabilistic');
     const [mixSendingStrategy, setMixSendingStrategy] = useState('timed');
+    const [numberValue, setNumberValue] = useState('1');
 
     const [settingsVisible, setSettingsVisible] = useState(false);
 
@@ -21,7 +22,7 @@ const Home = () => {
         updateAsymmetricAlgorithm(encryptionAlgorithm);
         // updateSymmetricAlgorithm(symmetricAlgorithm);
         updateMixPathAlgorithm(mixPathAlgorithm);
-        updateMixSendingStrategy(mixSendingStrategy);
+        updateMixSendingStrategy(mixSendingStrategy, numberValue);
         serverRequestService.sendToSendingServer(url, email, subject, message, encryptionAlgorithm, mixPathAlgorithm, mixSendingStrategy);
         
         // Here you can add the logic to send the email, e.g., using an API call
@@ -77,9 +78,9 @@ const Home = () => {
         }
     }
 
-    const updateMixSendingStrategy = async (strategy) => {
+    const updateMixSendingStrategy = async (strategy, numberValue) => {
         try {
-            const response = await fetch(`${url}updateSendStrategy?strategy_name=${strategy}`);
+            const response = await fetch(`${url}updateSendStrategy?strategy_name=${strategy}&value=${numberValue}`);
             const result = await response.json();
             if (response.ok) {
                 console.log(result.message);
@@ -173,18 +174,28 @@ const Home = () => {
                             </select>
                         </div>
                         <h2 className="text-2xl font-semibold mb-6">Admin Settings</h2>
-                        <div className="mb-4">
-                            <label className="block text-gray-700 mb-2">Mix Sending Strategy</label>
-                            <select
-                                value={mixSendingStrategy}
-                                onChange={(e) => setMixSendingStrategy(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                            >
-                                <option value="threshold">Threshold Strategy</option>
-                                <option value="timed">Timed Strategy</option>
-                                {/* <option value="Strategy 3">Strategy 3</option> */}
-                            </select>
-                        </div>
+<div className="mb-4">
+    <label className="block text-gray-700 mb-2">Mix Sending Strategy</label>
+    <div className="flex items-center">
+        <select
+            value={mixSendingStrategy}
+            onChange={(e) => setMixSendingStrategy(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md mr-4"
+        >
+            <option value="threshold">Threshold Strategy</option>
+            <option value="timed">Timed Strategy</option>
+            {/* <option value="Strategy 3">Strategy 3</option> */}
+        </select>
+        <input
+            type="number"
+            value={numberValue}
+            onChange={(e) => setNumberValue(e.target.value)}
+            className="w-20 px-3 py-2 border border-gray-300 rounded-md"
+        />
+    </div>
+</div>
+
+
                     </div>
                 )}
             </div>
