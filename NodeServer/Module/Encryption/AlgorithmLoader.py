@@ -4,6 +4,18 @@ from AsymmetricEncryption import AsymmetricEncryption
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "Utils")) 
 from APICaller import APICaller 
 
+
+
+module = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+sys.path.insert(0, module)
+from logging_config import logger
+
+config_file = os.path.join(os.path.dirname(__file__), "..", "..", "Storage", "config.json")
+with open(config_file, 'r') as file:
+    data = json.load(file)
+ID = data["id"]
+
+
 class AlgorithmLoader:
     def __init__(self, algorithm_directory):
         self.algorithm_directory = algorithm_directory
@@ -90,6 +102,7 @@ class AlgorithmLoader:
             }
 
             print(data)
+            logger.info(f"MIX_NODE{ID}: Generate aymmetric key")
 
             self.api_caller.post("encryption/update_encryption", data)    
 

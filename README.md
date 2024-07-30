@@ -16,3 +16,5 @@ Remailer project for the university course Computer Security and Software Design
 `cd frontend`  
 `npm install`  
 ``npm start``
+
+cd /d D:\TKPM\SimpleRemailer\frontend

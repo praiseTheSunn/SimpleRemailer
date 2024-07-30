@@ -36,6 +36,7 @@ from Module.MixNode import *
 from Module.schemas import EmailRequest, Message
 from Module.MixNode import MixNode
 from NonProbabilisticPathGenerationStrategy import NonProbabilisticPathGenerationStrategy
+from ProbabilisticPathSelectionStrategy import ProbabilisticPathGenerationStrategy
 from TimedSendStrategy import TimedSendStrategy
 from Email import Email
 from EncryptionManager import EncryptionManager
@@ -53,7 +54,7 @@ send_strategy = TimedSendStrategy(10)
 gmail = Email()
 gmail.get_email_from_json(STORAGE_PATH + "mail_acc.json")
 
-mix_node = MixNode(asymmetric_encrytion_manager=managerAsym, symmetric_encryption_manager=managerSym, send_strategy=send_strategy, email=gmail, path_strategy=NonProbabilisticPathGenerationStrategy())
+mix_node = MixNode(asymmetric_encrytion_manager=managerAsym, symmetric_encryption_manager=managerSym, send_strategy=send_strategy, email=gmail, path_strategy=ProbabilisticPathGenerationStrategy())
 
 
 app = FastAPI()
@@ -98,11 +99,11 @@ async def send_email(request: EmailRequest):
 @app.post("/receiveEmail")
 async def receive_email(message: Message):
     try:
-        logger.info(f"MIX_NODE {ID}: Received email: {message.content}")
+        # logger.info(f"MIX_NODE {ID}: Received email: {message.model_dump()}")
         mix_node.receive_and_add_to_queue(message)
         return {"status": "success", "message": "Email received successfully"}
     except Exception as e:
-        logger.error(f"MIX_NODE {ID}: Error receiving email: {str(e)}")
+        # logger.error(f"MIX_NODE {ID}: Error receiving email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
     
