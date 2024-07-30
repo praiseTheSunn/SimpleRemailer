@@ -3,6 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import sys
 import os
+import json
+
+config_file = os.path.join(os.path.dirname(__file__), "Storage", "config.json")
+with open(config_file, 'r') as file:
+    data = json.load(file)
+ID = data["id"]
+
+module = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, module)
+from logging_config import logger
 
 # Get the absolute path of the project root directory
 module = os.path.abspath(os.path.join(os.path.dirname(__file__), '.'))
@@ -60,6 +70,7 @@ app.add_middleware(
 # Define the hello page
 @app.get("/")
 async def read_root():
+    logger.info(f"MIX_NODE {ID}: Root endpoint called.")
     return "This is node Server."
 
 
@@ -67,48 +78,55 @@ async def read_root():
 async def receive_email(request: Request):
     try:
         message = await request.json()
-        print(message)
-        return {"status": "success", "message": "Email received successfully"}
+        logger.info(f"MIX_NODE {ID}: Received message: {message}")
+        return {"status": "success", "message": "Message received successfully"}
     except Exception as e:
+        logger.error(f"MIX_NODE {ID}: Error receiving message: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/sendEmail")
 async def send_email(request: EmailRequest):
     try:
+        logger.info(f"MIX_NODE {ID}: Sending email with request: {request}")
         return {"status": "success", "message": "Email sent successfully"}
-
     except Exception as e:
+        logger.error(f"MIX_NODE {ID}: Error sending email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/receiveEmail")
 async def receive_email(message: Message):
     try:
-        print("\nNEW MESSAGE: \n", message)
-        print()
+        logger.info(f"MIX_NODE {ID}: Received email: {message.content}")
         mix_node.receive_and_add_to_queue(message)
-
         return {"status": "success", "message": "Email received successfully"}
     except Exception as e:
-        print(e)
+        logger.error(f"MIX_NODE {ID}: Error receiving email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
     
 @app.get("/updateSymmetricAlgorithm")
 async def update_symmetric_algorithm(algorithm_name: str):
     try:
         mix_node.update_symmetric_algorithm(algorithm_name)
+        logger.info(f"MIX_NODE {ID}: Symmetric algorithm updated to {algorithm_name}.")
         return {"status": "success", "message": "Symmetric algorithm updated successfully"}
     except Exception as e:
+        logger.error(f"MIX_NODE {ID}: Error updating symmetric algorithm: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/updateAsymmetricAlgorithm")
 async def update_asymmetric_algorithm(algorithm_name: str):
     try:
         mix_node.update_asymmetric_algorithm(algorithm_name)
+        logger.info(f"MIX_NODE {ID}: Asymmetric algorithm updated to {algorithm_name}.")
         return {"status": "success", "message": "Asymmetric algorithm updated successfully"}
     except Exception as e:
+        logger.error(f"MIX_NODE {ID}: Error updating asymmetric algorithm: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # class StrategyRequest(BaseModel):
 #     strategy: str
@@ -141,16 +159,21 @@ async def update_asymmetric_algorithm(algorithm_name: str):
 
 
 def get_beginning_info():
-    with open(STORAGE_PATH + "config.json", 'r') as file:
-        data = json.load(file)
+    try:
+        with open(config_file, 'r') as file:
+            data = json.load(file)
+        
+        id, ip = data["id"], re.sub(r"http://localhost:(\d+)", r"127.0.0.1:\1", data["ip"])
+        logger.info(f"MIX_NODE {id}: Starting node.\n\t- id: {id}\t- ip: {ip}")
 
-    id, ip = data["id"], re.sub(r"http://localhost:(\d+)", r"127.0.0.1:\1", data["ip"])
-    print(f"THIS IS A MIX NODE\n\t- id: {id}\t- ip: {ip}")
+        # Get the list of available algorithms
+        available_algorithms = managerAsym.get_available_algorithms()
+        logger.info(f"MIX_NODE {ID}: \tAvailable algorithms:\n\t\tAsymmetric: {available_algorithms}")
+        logger.info(f"MIX_NODE {ID}: \t\tSymmetric: {managerSym.get_available_algorithms()}")
+    except Exception as e:
+        logger.error(f"MIX_NODE {ID}: Error getting initial info: {str(e)}")
 
-    # Get the list of available algorithms
-    available_algorithms = managerAsym.get_available_algorithms()
-    print(f"\tAvailable algorithms:\n\t\tAsymmetric:{available_algorithms}")
-    print(f"\t\tSysmetric:{managerSym.get_available_algorithms()}")
+
 
 if __name__ == '__main__':
     get_beginning_info()
