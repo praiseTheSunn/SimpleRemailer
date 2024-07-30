@@ -1,4 +1,4 @@
-from NodeServer.Module.SendStrategy.SendStrategy import SendStrategy
+from SendStrategy import SendStrategy
 from datetime import datetime, timedelta
 
 class TimedSendStrategy(SendStrategy):

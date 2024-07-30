@@ -13,23 +13,25 @@ import requests
 
 import base64
 
-from NodeServer.Module.schemas import EmailRequest, Message, Hidden, KEncrypted
+from schemas import EmailRequest, Message, Hidden, KEncrypted
 import threading
 import time
 
 from cryptography.hazmat.primitives import serialization
 import json
+import re
 
 DIGEST_SIZE = hashes.SHA256().digest_size
+STORAGE_PATH = "NodeServer/Storage/"
 
 
 class MixNode:
-    def __init__(self, asymmetric_encrytion_manager, symmetric_encryption_manager, send_strategy, email):
+    def __init__(self, asymmetric_encrytion_manager, symmetric_encryption_manager, send_strategy, email, path_strategy):
         self.asymmetric_encrytion_manager = asymmetric_encrytion_manager
         self.symmetric_encryption_manager = symmetric_encryption_manager
         self.forward_list = []
         self.send_strategy = send_strategy
-        # self.path_strategy =
+        self.path_strategy = path_strategy
         self.lock = threading.Lock()
         self.send_thread = threading.Thread(target=self.process_mails)
         self.last_send = datetime.now()
@@ -89,6 +91,14 @@ class MixNode:
         encrypted_data = b''.join(encrypted_chunks)
 
         return encrypted_data
+
+    def get_cur_id_ip(self):
+        with open(STORAGE_PATH + "config.json", 'r') as file:
+            data = json.load(file)
+
+        pattern = r"http://localhost:(\d+)"
+        ip = re.sub(pattern, r"127.0.0.1:\1", data["ip"])
+        return data["id"], ip
 
     # Function to decrypt data with a given private key
     def decrypt_with_key(self, algorithm_name: str, private_key, encrypted_data: bytes) -> bytes:
@@ -158,9 +168,9 @@ class MixNode:
 
         encrypted_data = kencrypted_bytes
         for i in range(0, len(symmetric_keys)):
-            print("?????", encrypted_data)
+            # print("?????", encrypted_data)
             encrypted_data = self.encrypt_with_key(algorithm_name, public_keys[i], encrypted_data)
-            print("ENCRYPTED DATA: ", encrypted_data)
+            # print("ENCRYPTED DATA: ", encrypted_data)
 
             if (i == len(symmetric_keys) - 1):
                 break
@@ -220,6 +230,33 @@ class MixNode:
 
         return ip, flag_begin, encrypted_content
 
+    def filter_node_info(self, data: dict):
+        # filter out node info return from path strategy / db server
+        id = data['id']
+        ip = data['ip']
+
+        # Extract the public key of the 'ecc_encryption'
+        public_key = next(
+            (item['public_key'] for item in data['asymmetric_encryptions'] if item['encryption'] == self.asymmetric_algorithm_name),
+            None)
+
+        filtered_data = {
+            'id': id,
+            'ip': ip,
+        }
+
+        json_string = json.dumps(filtered_data, indent=4)
+        return json_string, public_key
+
+    def get_public_key(self, data: dict):
+        pub = next(
+            (item['public_key'] for item in data['asymmetric_encryptions'] if item['encryption'] == self.asymmetric_algorithm_name),
+            None)
+        if pub is not None:
+            pub = base64.b64decode(pub)
+        return pub
+
+
     def receive_and_add_to_queue(self, encrypted_message: Message):
         encryption_algorithm = encrypted_message.encryption_algorithm
 
@@ -246,40 +283,46 @@ class MixNode:
         # print(next_ip, next_encrypted_content)
 
         # print(encryption_algorithm, decrypted_symmetric_key, next_node_encrypted_key, next_ip, next_encrypted_content)
+        my_id = self.get_cur_id_ip()[0]
 
         if (flag_begin):
             # create path
-            print("PATH:")
-            # testing
-            paths = ['127.0.0.1:8002', '127.0.0.1:8003']
+
+            # print("PATH:")
+            new_nodes, new_path_flag = self.path_strategy.get_path(flag_begin)
+            # print("new nodes raw:", new_nodes)
+            # print("new flag:", new_path_flag)
+            # print(my_id)
+
+            if my_id == new_nodes[-1]['id']:
+                # cant send to itself
+                new_nodes.pop()
+                new_path_flag.pop()
+
+            if len(new_nodes) != len(new_path_flag):
+                print("ERROR: KHONG MATCH nodes vs path")
+
+            # new_nodes_str = [self.filter_node_info(node) for node in new_nodes]
+            pattern = r"http://localhost:(\d+)"
+            paths = [re.sub(pattern, r"127.0.0.1:\1", node['ip']) for node in new_nodes]
+            print("New path: ", paths)
+            print("New flag:", new_path_flag)
             paths_bytes = [bytes(path, 'utf-8') for path in paths]
-            flags = [False for i in range(2)]
             new_path_encryption_algorithm = self.asymmetric_algorithm_name
 
             symmetric_keys = []
-            for i in range(2):
+            for i in range(len(new_nodes)):
                 symmetric_keys.append(self.symmetric_encryption_manager.generate_keys(self.symmetric_algorithm_name))
-            # public keys for rsa_encryption
-            # public_keys = ['-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyQTNYjMhVgL40Ri9s4ed\nYn3lpxh2mqhmns4Vvg+t4/sccRSTMYx4CGLugv9G4MqG5BpHYlnlGv5uTgtCzbqS\nHFLaB5Wh5GgDRpUOjA8fW5dpnNDle6g5AtjRCiRGcvnF+Bo9Kp7ESQ/AMCoWVhY4\nAFRYAw+qcIQEUDgQs755H7woJEj1oh4lvVnYOAYdAb78177KViu8XVWpDB77vsP7\nOfjnL2Y0OLLOBTDV1IzeMPKsUfJxFxXO66G7toEJCvxT6yTe8TVKq3vertN+S74l\naHBzYQLKU+QVt2YMlDAz73RhsBRjFUxAVJyHhGtMJS7Fyvg/oLLtQcSVShgAnNFX\nGwIDAQAB\n-----END PUBLIC KEY-----\n',
-            #    '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5//lcp8ilZOAv2npT9x9\n6XYoUH/sRO1/CGf1fNSCNpuUUTFWDb5l0w92qJ0tG7s1z6/R0TJu/a1GcaVmtjH6\nSjSyQKNZkGUFPhrb7iq+2EMF6Q268BYqPKmXaNEHxHk/3LhYOcbm0DgjO+A/wxRz\n3LABNkEG0JLfCKoVhLFgSKJpZf9jzQSWdcIMeur0mhfVocVOgq3/JF0rdy4JrnBH\n3C1LKPzRokPKQHftLYp6r2yq7tz07f6PVde/oTkGToQBlKy0WuGr7wTAllWl24pQ\n/HI0FSZu3NW+HmMZPnwPnYvhZaRhMBxY51haV2HeofudT9MTzBcw0RZ4fzPNXNeR\nxQIDAQAB\n-----END PUBLIC KEY-----\n',
-            #    '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3ToZ4I+N5ABffAdGz4bW\nV7xLcnhz0m0k5O6H9JvDNEAqt6z76zQX09UWRd2xHieQX+E3xpp7Y1D1aWjieQly\nxOV6HR/vjvdA6df3kMBiwS61ZfmFd8TjO0hPXD04+7Dxy5eW5y/GiuubFXSsnBBO\n3uLvz2q3Jkf6WVYSLoe2SfPR/jVUjxyQU26uS6XyV8v8vKW+59a6UG7X8Rsj13LS\npScsZ7qDv0sFmkTN0pLzbl5wVlJQ/m7bDCNu6X2laM4IvUt9G+fUOdPp5lI4jHPJ\nrJxk6lW1CeMXgDdYWDTHz5+0BNgnO5h9tH6jBohXBb5i+kDXBnzkjiuwdxEPX6EI\nawIDAQAB\n-----END PUBLIC KEY-----\n']
-            # public keys for ecc_encryption
-            public_keys = [
-                '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArhU9ZxXBFRtpuLRsrioh\nWhEs+TJ7T1Jl0AO+haRmRSaswePuBdMprE+0XXtmVLhnPdTPFyJfeAtbgeYzCqfo\n3yIr+8sU5rTrYRBTJz+rBmfuSoRgLg4roHuYN5NBvsiw4UqQGj8w2B5BQNBn4HCS\nkIQiUw7X4GZZF9ke/9eDLlKqH/odC2rwbME8Z/x2Xwpmb5yPAlMW5jMNDBaUzxjo\nVzlKm/81kn3Oc0SMPWURQx+og1QHnp792lIxQE5aF9SgJgIkiSwPDw4y/zHVE+qj\nxqY2WWZha+Wr/QMWEew6Jxs/CiWqx19cU8WJydD7bOWC0CG5QRwp89N3rNUrVUNm\nOwIDAQAB\n-----END PUBLIC KEY-----\n',
-                '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyZxJ7yEis8pTaDADhFop\n/BQWes7UgMl/EuwTXnt2DA4iXE21vwDxfAKKXmcCepUv2AwK01eMFuNJuJqhaxav\nP6ggnHbV2g+rdjiYCelh+oo2SFRomYYaqIbh4wfU3BPatIbaHJ/DQK16sOrgUPj7\niYoWB0wR6xGlIz3QHgW+zlIfEA7SDFLYYo12dt+SdtA8XE1HKFWt7Tv5tLSnB2bJ\nT4bApE/3kAc/4+pbBqj60EAce7ZMOkQWTw8VbUnEagoKASI3ifz3q8C1z8ughHSd\nfg4VJIOwcWhF3haw4VG8dIYELuHxzRrSISgoGM/hawgfALEH155Nc7YOFKEpC9km\nZwIDAQAB\n-----END PUBLIC KEY-----\n']
-            # public_keys = [
-            #     '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyQTNYjMhVgL40Ri9s4ed\nYn3lpxh2mqhmns4Vvg+t4/sccRSTMYx4CGLugv9G4MqG5BpHYlnlGv5uTgtCzbqS\nHFLaB5Wh5GgDRpUOjA8fW5dpnNDle6g5AtjRCiRGcvnF+Bo9Kp7ESQ/AMCoWVhY4\nAFRYAw+qcIQEUDgQs755H7woJEj1oh4lvVnYOAYdAb78177KViu8XVWpDB77vsP7\nOfjnL2Y0OLLOBTDV1IzeMPKsUfJxFxXO66G7toEJCvxT6yTe8TVKq3vertN+S74l\naHBzYQLKU+QVt2YMlDAz73RhsBRjFUxAVJyHhGtMJS7Fyvg/oLLtQcSVShgAnNFX\nGwIDAQAB\n-----END PUBLIC KEY-----\n',
-            #     '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvXIhrmRC5xAZbMmR1DTw\npA1ODZlH/Fl/mUi5N99hMlc+xFIeQW4KYy1dRnQ1/2v7iDS0El+6iq3nkhyuuyGe\nc8f/nrPDp4yqhoGJEzRU9z70jI5XXEzk5rVJxfsBmewwaof/f62dNp4SuDk7KQAh\n8R+p80931nOz6QfiELE6tvsj4O2HH8OTYC0wg6ityXR30hd3Ls5Cl64nezOEEVw+\nv+IYyImF0+5msyFYl20btybvSZm9PWGHUE8H997LUGUMQVyad6j6HgZvy3HZ9+Fd\n+TOeJUWLsYTdCdpmvYZbS53u7SVBzcgMsSYca0dGVxayWhLP7JgHjQ6kRyR0ZXPH\niwIDAQAB\n-----END PUBLIC KEY-----\n',
-            #     '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlaquoqryz1Kf3fGdWWUf\nyk7PIjS5J4Rnf33dXsJ34USH5W8cDcHvtxW6kNzKjv7EJaVM/whI4V4Qvb2ma+zw\ntAph1Kdh9A2lAjG3uDtWTVb6e8+HIlKFGHJYqd9+0my2X9aCSf8V55HaIYBpeBUv\nYzsbzE2EYitJJIeGbPXFM9pjE5X2qnxSYzpf36Lrga8ysy7izItS9oxi5C66GE6b\nlpzwiADxa/t/EvkVXTNyuxKAvUga2qvP/Kldn5bPGv4ZqoOH8Vax5ZRtSXsTWr5F\nHdI2yrMsPtqnbulJezHEY6PrgapSNKe4dSFgD0rMTrJyMkupkmNGI6IIf+QNTZOi\nawIDAQAB\n-----END PUBLIC KEY-----\n'
-            # ]
-            public_keys = [bytes(key, 'utf-8') for key in public_keys]
 
-            next_encrypted_content = self.symmetric_multi_layer_encrypt(symmetric_keys, paths_bytes, flags,
+            public_keys = [self.get_public_key(node) for node in new_nodes]
+            # print("public keys:", public_keys)
+
+            next_encrypted_content = self.symmetric_multi_layer_encrypt(symmetric_keys, paths_bytes, new_path_flag,
                                                                         next_encrypted_content)
-            print("DONE ENCRYPTED CONTENT")
+            # print("DONE ENCRYPTED CONTENT")
             next_encrypted_key = self.asymmetric_multi_layer_encrypt(new_path_encryption_algorithm, public_keys,
                                                                      symmetric_keys)
-            print("DONE ENCRYPTED KEY")
+            # print("DONE ENCRYPTED KEY")
 
             next_ip = paths[-1]
             next_encrypted_content = base64.b64decode(next_encrypted_content)
@@ -305,7 +348,7 @@ class MixNode:
             with self.lock:
                 lists_to_forward = self.send_strategy.get_forward_mail_list(self)
                 if lists_to_forward is not None and len(lists_to_forward) > 0:
-                    # print("Forwarding emails:")
+                    # print("Running in new thread to forward/send...:")
                     self.forward(lists_to_forward)
                     self.last_send = datetime.now()
 
@@ -315,13 +358,17 @@ class MixNode:
         for next_ip, forward_msg in forward_list:
             # check flag end here to send email
             print(next_ip, forward_msg)
+
+            my_ip = self.get_cur_id_ip()[1]
             if forward_msg.encrypted_key == '':
                 # send email
-                print("Sending email:\n", forward_msg.encrypted_content)
+                print(f"\tThis is last node\n\tSending email from {my_ip}...\n", forward_msg.encrypted_content)
                 msg_dict = json.loads(forward_msg.encrypted_content)
                 self.email.send_email(msg_dict["email"], msg_dict["subject"],
                                       msg_dict["message"])
             else:
+
+                print(f"\tForward from {my_ip} to: {next_ip}")
                 requests.post(f"http://{next_ip}/receiveEmail", json=forward_msg.model_dump())
 
     def stop(self):
