@@ -142,6 +142,15 @@ async def update_asymmetric_algorithm(algorithm_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/updateSendStrategy")
+async def update_send_strategy(strategy_name: str):
+    try:
+        if (strategy_name == "timed"):
+            mix_node.update_send_strategy(TimedSendStrategy(10))
+        return {"status": "success", "message": "Send strategy updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # class StrategyRequest(BaseModel):
 #     strategy: str
 #     i: int = 1
