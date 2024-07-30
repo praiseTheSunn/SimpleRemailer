@@ -8,8 +8,8 @@ const Home = () => {
 
     const [encryptionAlgorithm, setEncryptionAlgorithm] = useState('rsa_encryption');
     const [symmetricAlgorithm, setSymmetricAlgorithm] = useState('aes_encryption');
-    const [mixPathAlgorithm, setMixPathAlgorithm] = useState('Algorithm 1');
-    const [mixSendingStrategy, setMixSendingStrategy] = useState('Strategy 1');
+    const [mixPathAlgorithm, setMixPathAlgorithm] = useState('probabilistic');
+    const [mixSendingStrategy, setMixSendingStrategy] = useState('timed');
 
     const [settingsVisible, setSettingsVisible] = useState(false);
 
@@ -17,8 +17,11 @@ const Home = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        alert(`Email: ${email}\nSubject: ${subject}\nMessage: ${message}\nEncryption: ${encryptionAlgorithm}\nMix Path: ${mixPathAlgorithm}\nMix Strategy: ${mixSendingStrategy}`);
+        // alert(`Email: ${email}\nSubject: ${subject}\nMessage: ${message}\nEncryption: ${encryptionAlgorithm}\nMix Path: ${mixPathAlgorithm}\nMix Strategy: ${mixSendingStrategy}`);
         updateAsymmetricAlgorithm(encryptionAlgorithm);
+        // updateSymmetricAlgorithm(symmetricAlgorithm);
+        updateMixPathAlgorithm(mixPathAlgorithm);
+        updateMixSendingStrategy(mixSendingStrategy);
         serverRequestService.sendToSendingServer(url, email, subject, message, encryptionAlgorithm, mixPathAlgorithm, mixSendingStrategy);
         
         // Here you can add the logic to send the email, e.g., using an API call
@@ -45,6 +48,48 @@ const Home = () => {
             console.error("Error updating algorithm:", error);
         }
     };
+
+    const updateSymmetricAlgorithm = async (algorithm) => {
+        try {
+            const response = await fetch(`${url}updateSymmetricAlgorithm?algorithm_name=${algorithm}`);
+            const result = await response.json();
+            if (response.ok) {
+                console.log(result.message);
+            } else {
+                console.error(result.detail);
+            }
+        } catch (error) {
+            console.error("Error updating algorithm:", error);
+        }
+    }
+
+    const updateMixPathAlgorithm = async (algorithm) => {
+        try {
+            const response = await fetch(`${url}updatePathStrategy?strategy_name=${algorithm}`);
+            const result = await response.json();
+            if (response.ok) {
+                console.log(result.message);
+            } else {
+                console.error(result.detail);
+            }
+        } catch (error) {
+            console.error("Error updating algorithm:", error);
+        }
+    }
+
+    const updateMixSendingStrategy = async (strategy) => {
+        try {
+            const response = await fetch(`${url}updateSendStrategy?strategy_name=${strategy}`);
+            const result = await response.json();
+            if (response.ok) {
+                console.log(result.message);
+            } else {
+                console.error(result.detail);
+            }
+        } catch (error) {
+            console.error("Error updating strategy:", error);
+        }
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
@@ -122,8 +167,8 @@ const Home = () => {
                                 onChange={(e) => setMixPathAlgorithm(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             >
-                                <option value="Algorithm 1">Probabilistic Stategy</option>
-                                <option value="Algorithm 2">Non-probabilistic Strategy</option>
+                                <option value="probabilistic">Probabilistic Stategy</option>
+                                <option value="non_probabilistic">Non-probabilistic Strategy</option>
                                 {/* <option value="Algorithm 3">Algorithm 3</option> */}
                             </select>
                         </div>
@@ -135,8 +180,8 @@ const Home = () => {
                                 onChange={(e) => setMixSendingStrategy(e.target.value)}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                             >
-                                <option value="Strategy 1">Threshold Strategy</option>
-                                <option value="Strategy 2">Timed Strategy</option>
+                                <option value="threshold">Threshold Strategy</option>
+                                <option value="timed">Timed Strategy</option>
                                 {/* <option value="Strategy 3">Strategy 3</option> */}
                             </select>
                         </div>

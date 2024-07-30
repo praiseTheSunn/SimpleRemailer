@@ -56,6 +56,9 @@ class MixNode:
     def update_send_strategy(self, send_strategy):
         self.send_strategy = send_strategy
 
+    def update_path_strategy(self, path_strategy):
+        self.path_strategy = path_strategy
+
     # def get_key_pair(self, algorithm_name):
     #     private_key_pem, public_key_pem = self.asymmetric_encrytion_manager.generate_keys(algorithm_name)
     #     return private_key_pem, public_key_pem

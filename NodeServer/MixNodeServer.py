@@ -36,6 +36,7 @@ from Module.MixNode import *
 from Module.schemas import EmailRequest, Message
 from Module.MixNode import MixNode
 from NonProbabilisticPathGenerationStrategy import NonProbabilisticPathGenerationStrategy
+from ProbabilisticPathSelectionStrategy import ProbabilisticPathGenerationStrategy
 from TimedSendStrategy import TimedSendStrategy
 from Email import Email
 from EncryptionManager import EncryptionManager
@@ -74,31 +75,31 @@ async def read_root():
     return "This is node Server."
 
 
-@app.get("/receiveMessage")
-async def receive_email(request: Request):
-    try:
-        message = await request.json()
-        logger.info(f"MIX_NODE {ID}: Received message: {message}")
-        return {"status": "success", "message": "Message received successfully"}
-    except Exception as e:
-        logger.error(f"MIX_NODE {ID}: Error receiving message: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+# @app.get("/receiveMessage")
+# async def receive_email(request: Request):
+#     try:
+#         message = await request.json()
+#         logger.info(f"MIX_NODE {ID}: Received message: {message}")
+#         return {"status": "success", "message": "Message received successfully"}
+#     except Exception as e:
+#         logger.error(f"MIX_NODE {ID}: Error receiving message: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.post("/sendEmail")
-async def send_email(request: EmailRequest):
-    try:
-        logger.info(f"MIX_NODE {ID}: Sending email with request: {request}")
-        return {"status": "success", "message": "Email sent successfully"}
-    except Exception as e:
-        logger.error(f"MIX_NODE {ID}: Error sending email: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+# @app.post("/sendEmail")
+# async def send_email(request: EmailRequest):
+#     try:
+#         logger.info(f"MIX_NODE {ID}: Sending email with request: {request}")
+#         return {"status": "success", "message": "Email sent successfully"}
+#     except Exception as e:
+#         logger.error(f"MIX_NODE {ID}: Error sending email: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/receiveEmail")
 async def receive_email(message: Message):
     try:
-        logger.info(f"MIX_NODE {ID}: Received email: {message.content}")
+        logger.info(f"MIX_NODE {ID}: Received email: {message.model_dump()}")
         mix_node.receive_and_add_to_queue(message)
         return {"status": "success", "message": "Email received successfully"}
     except Exception as e:
@@ -132,7 +133,21 @@ async def update_send_strategy(strategy_name: str):
     try:
         if (strategy_name == "timed"):
             mix_node.update_send_strategy(TimedSendStrategy(10))
+            logger.info(f"MIX_NODE {ID}: Send strategy updated to timed.")
         return {"status": "success", "message": "Send strategy updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/updatePathStrategy")
+async def update_path_strategy(strategy_name: str):
+    try:
+        if (strategy_name == "non_probabilistic"):
+            mix_node.update_path_strategy(NonProbabilisticPathGenerationStrategy())
+            logger.info(f"MIX_NODE {ID}: Path strategy updated to non-probabilistic.")
+        elif (strategy_name == "probabilistic"):
+            mix_node.update_path_strategy(ProbabilisticPathGenerationStrategy())
+            logger.info(f"MIX_NODE {ID}: Path strategy updated to probabilistic.")
+        return {"status": "success", "message": "Path strategy updated successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
