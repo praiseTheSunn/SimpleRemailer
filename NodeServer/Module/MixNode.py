@@ -21,8 +21,14 @@ from cryptography.hazmat.primitives import serialization
 import json
 import re
 
+module = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, module)
+from logging_config import logger
+
+
 DIGEST_SIZE = hashes.SHA256().digest_size
-STORAGE_PATH = "NodeServer/Storage/"
+STORAGE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Storage'))
+STORAGE_PATH += "\\"
 
 
 class MixNode:
@@ -308,8 +314,10 @@ class MixNode:
             # new_nodes_str = [self.filter_node_info(node) for node in new_nodes]
             pattern = r"http://localhost:(\d+)"
             paths = [re.sub(pattern, r"127.0.0.1:\1", node['ip']) for node in new_nodes]
-            print("New path: ", paths)
-            print("New flag:", new_path_flag)
+            # print(f"MIX_NODE{self.get_cur_id_ip()[0]}: Generate new paths {paths[::-1]}")
+            logger.info(f"MIX_NODE{self.get_cur_id_ip()[0]}: Generate new path {paths[::-1]}")
+            # print("New flag:", new_path_flag)
+            logger.info(f"MIX_NODE{self.get_cur_id_ip()[0]}: New flags for path {new_path_flag[::-1]}")
             paths_bytes = [bytes(path, 'utf-8') for path in paths]
             new_path_encryption_algorithm = self.asymmetric_algorithm_name
 
@@ -363,15 +371,17 @@ class MixNode:
             print(next_ip, forward_msg)
 
             my_ip = self.get_cur_id_ip()[1]
+
             if forward_msg.encrypted_key == '':
                 # send email
-                print(f"\tThis is last node\n\tSending email from {my_ip}...\n", forward_msg.encrypted_content)
+                # print(f"\tThis is last node\n\tSending email from {my_ip}...\n", forward_msg.encrypted_content)
+                logger.info(f"MIX_NODE {self.get_cur_id_ip()[0]}: \tThis is last node\n\tSending email from {my_ip}...\n {forward_msg.encrypted_content}")
                 msg_dict = json.loads(forward_msg.encrypted_content)
                 self.email.send_email(msg_dict["email"], msg_dict["subject"],
                                       msg_dict["message"])
             else:
-
-                print(f"\tForward from {my_ip} to: {next_ip}")
+                # print(f"\tForward from {my_ip} to: {next_ip}")
+                logger.info(f"MIX_NODE {self.get_cur_id_ip()[0]}: \tForward from {my_ip} to: {next_ip}")
                 requests.post(f"http://{next_ip}/receiveEmail", json=forward_msg.model_dump())
 
     def stop(self):

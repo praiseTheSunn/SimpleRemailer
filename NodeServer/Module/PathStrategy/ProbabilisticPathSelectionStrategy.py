@@ -3,7 +3,7 @@ from PathStrategy import *
 
 class ProbabilisticPathGenerationStrategy(PathStrategy):
 
-    def generate_path(self, new_path_percentage=10):
+    def generate_path(self, new_path_percentage=25):
         path_length = random.randint(2, min(len(self.all_nodes), 5))
         bool_array = random.choices([True, False], weights=[new_path_percentage, 100-new_path_percentage], k=path_length)
         return random.sample(self.all_nodes, path_length), bool_array

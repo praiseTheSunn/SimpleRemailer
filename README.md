@@ -22,3 +22,6 @@ Remailer project for the university course Computer Security and Software Design
 - Kịch bản 2: ecc, blow-fish, time-send=60, probabilitic generation path, 2 thư
 - Kịch bản 3: ecc, blow-fish, threshold=3, non-probabilitic generation path, 3 thư
     
+``npm start``
+
+cd /d D:\TKPM\SimpleRemailer\frontend
